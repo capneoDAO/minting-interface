@@ -9,7 +9,6 @@ import { BsQuestionCircle } from "react-icons/bs"
 
 import Footer from "../components/Footer";
 import Toolbar from "../components/Toolbar";
-import PriceCard from "../components/PriceCard";
 
 
 const ValuationPage: NextPage = ({ prices }: any) => {
@@ -178,7 +177,6 @@ const ValuationPage: NextPage = ({ prices }: any) => {
 
 
                     <div className="relative z-0 flex flex-col h-96 w-full  xl:w-1/2 max-w-3xl items-center justify-center mt-24 xl:mt-32 ">
-                        <PriceCard showCard={showCard} processing={idProcessing || coordinatesProcessing} name={name} imageLink={imageLink} openseaLink={openseaLink} sandboxLink={sandboxLink} tokenID={tokenID} ethPrice={ethPrice} sandPrice={sandPrice} usdPrice={usdPrice} />
                         <div className={`${showCard ? "block  animate__fadeIn" : "hidden"} absolute animate__animated h-full w-screen xl:w-full bg-black bg-opacity-70 z-30 scale-y-150`} />
 
                         <div className={`hidden md:block absolute bottom-0 left-64 rounded-md h-56 w-56 z-0 opacity-60 scale-90 animate__animated animate__zoomIn`}>

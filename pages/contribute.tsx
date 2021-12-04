@@ -6,8 +6,7 @@ import "animate.css"
 
 import Footer from "../components/Footer";
 import Toolbar from "../components/Toolbar";
-import WorkingGroupCard from "../components/WorkingGroupCard";
-import wgJSON from "../data/workingGroups.json"
+
 
 
 
@@ -35,11 +34,7 @@ const ContributePage: NextPage = () => {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 justify-items-center gap-10 w-full pb-20 pt-10">
 
-                        {wgJSON.map((element, key) => {
-                            return (
-                                <WorkingGroupCard key={key} title={element.title} description={element.description} />
-                            );
-                        })}
+
 
                     </div>
 
