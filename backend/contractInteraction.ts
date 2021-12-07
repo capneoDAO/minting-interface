@@ -1,8 +1,5 @@
 import { Interface } from "@ethersproject/abi";
 import { BigNumber, ethers, providers } from "ethers";
-import { Chains } from "../lib/chains";
-
-import { Contracts } from "../lib/contracts";
 
 import mintAbi from "./abi/mintAbi.json"
 

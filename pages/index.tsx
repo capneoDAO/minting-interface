@@ -1,23 +1,20 @@
 import { useState } from 'react';
 import type { NextPage } from 'next'
 import Head from 'next/head'
-import "animate.css"
-
-import WalletModal from "../components/WalletModal";
-import WalletButton from '../components/WalletButton';
-import useConnectWeb3 from '../backend/connectWeb3';
-import TransactionModal from "../components/TransactionModal"
-import { useAppSelector } from '../state/hooks';
-
+import { BigNumber, ethers } from 'ethers';
 import { AiFillPlusCircle } from "react-icons/ai"
 import { AiFillMinusCircle } from "react-icons/ai"
 import { FaLinkedin, FaTelegramPlane, FaEthereum, FaInstagram, FaTwitter, FaMedium, FaYoutube } from "react-icons/fa";
 
-import { BigNumber, ethers } from 'ethers';
+import useConnectWeb3 from '../backend/connectWeb3';
 import { getNFTs, getNFTQuantity, mintNFT } from '../backend/contractInteraction';
-import { Chains } from '../lib/chains';
 import changeChain from '../backend/changeChain';
+import { Chains } from '../lib/chains';
+import { useAppSelector } from '../state/hooks';
 
+import WalletModal from "../components/WalletModal";
+import WalletButton from '../components/WalletButton';
+import TransactionModal from "../components/TransactionModal"
 
 
 const Home: NextPage = () => {
