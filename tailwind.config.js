@@ -12,6 +12,9 @@ module.exports = {
         '1/5': '20%',
         '1/6': '10%'
       },
+      zIndex: {
+        '-10': '-10',
+      },
       maxWidth: {
         '1/4': '25%',
         '1/2': '50%',
@@ -41,7 +44,7 @@ module.exports = {
         '18': '4.5rem',
         '30': '7.5rem',
       },
-      scale: {
+      scale: {
         '55': '.55',
         '60': '.6',
         '65': '.65',
@@ -59,11 +62,11 @@ module.exports = {
         '1/2': '50%'
       },
       transitionProperty: {
-        'visibility': 'visibility'
+        'visibility': 'visibility',
       },
       boxShadow: {
         round: '0 0px 30px -15px rgba(0, 0, 0, 0.25)',
-        color: '0 0px 20px 0px rgba(250, 250, 250, 0.5)',
+        color: '0 0px 30px 10px rgba(250, 250, 250, 0.2)',
         colorbottom: '0 0px 40px 0px rgba(250, 250, 250, 0.1)',
         button: '0 0px 8px 0px rgba(250, 250, 250, 0.4)',
         black: '0 0px 40px 0px rgba(0, 0, 0, 0.1)',
@@ -85,7 +88,7 @@ module.exports = {
       padding: {
         full: '100%'
       },
-      backgroundImage:  {
+      backgroundImage: {
         'hero-pattern': "url('/public/images/pool_punk.png')",
       },
       colors: {
