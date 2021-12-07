@@ -73,21 +73,18 @@ const Home: NextPage = () => {
 
     const mint = async () => {
         setShowNFTs(false)
-        const formattedQuantity = ethers.utils.parseEther(quantity.toString())
-        const transaction = await mintNFT(web3Provider, formattedQuantity)
+        const transaction = await mintNFT(web3Provider, quantity)
         await processTransaction(transaction)
     }
 
     const getData = async () => {
         setShowNFTs(false)
         setLoading(true)
-        const qty: BigNumber = await getNFTQuantity(web3Provider, "0x2a9Da28bCbF97A8C008Fd211f5127b860613922D")
-        console.log(qty.toNumber())
-        const result = await getNFTs(web3Provider, "0x2a9Da28bCbF97A8C008Fd211f5127b860613922D", qty.toNumber())
+        const qty: BigNumber = await getNFTQuantity(web3Provider, address)
+        const result = await getNFTs(web3Provider, address, qty.toNumber())
         if (result) {
             setNFTs(result)
         }
-        console.log(result)
         setLoading(false)
         setShowNFTs(true)
     }
@@ -108,16 +105,16 @@ const Home: NextPage = () => {
             )}
 
             <main className="flex flex-col items-start w-screen overflow-hidden">
-                <div className="w-full flex justify-between items-center px-10 py-10" >
+                <div className="w-full flex justify-between items-center p-5 lg:p-10" >
                     <a href="https://www.metagamehub.io" target="_blank" className="transform hover:scale-110 transition-all duration-500 ease-in-out">
-                        <img src="/images/mgh_logo.png" className={`h-18`} />
+                        <img src="/images/mgh_logo.png" className={`h-12 lg:h-18`} />
                     </a>
                     <WalletButton onClick={() => setOpenModal(true)} disconnectWallet={disconnectWallet} />
                 </div>
 
 
                 <div className="flex flex-col w-full">
-                    <h1 onClick={getData} className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-pink-500 text-center">Meta NFT Portraits</h1>
+                    <h1 className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-pink-500 text-center mt-10 p-5">Meta NFT Portraits</h1>
 
                     <div className="flex w-full min-w-max h-screen items-center">
                         <div className="flex slideshow w-full h-3/4">
@@ -152,7 +149,7 @@ const Home: NextPage = () => {
 
                     </div>
 
-                    <div className="flex flex-col self-center select-none shadow-color bg-gray-900 rounded-xl p-5">
+                    <div className="flex flex-col self-center select-none shadow-color bg-gray-900 rounded-xl p-5 transform scale-70 xs:scale-75 sm:scale-100">
                         <div className="flex items-stretch space-x-8 pb-4">
                             <div className="flex flex-col items-center pt-3">
                                 <p className="text-gray-400 font-medium self-start pl-2">Quantity</p>
@@ -211,7 +208,7 @@ const Home: NextPage = () => {
                         <div className="flex flex-wrap w-screen h-auto py-10 my-10">
                             {Object.entries(NFTs).map(([id, imageLink]: any) => {
                                 return (
-                                    <div className="relative w-2/12">
+                                    <div key={id} className="relative w-2/12">
                                         <div className="absolute top-0 left-0 w-full h-full backdrop-filter backdrop-blur-xl bg-black bg-opacity-30 flex flex-col items-center justify-center p-2 opacity-0 hover:opacity-100 transition ease-in-out duration-300 cursor-pointer">
                                             <a href={`https://opensea.io/assets/0x657c7e3b1d32bc4e757a2648a004d2f50d83d6a0/${id}`} target="_blank" className="text-gray-200 text-lg font-medium text-center">View on Opensea</a>
                                         </div>
@@ -224,9 +221,9 @@ const Home: NextPage = () => {
                 )}
 
 
-                <div className="relative w-full h-96 overflow-hidden">
-                    <img src="/images/mgh_logo.png" className="w-3/4 absolute top-8 -left-1/4 blur-xl" />
-                    <div className="flex flex-row items-center w-full justify-center lg:justify-end flex-wrap space-x-3 absolute bottom-0 right-0 p-10">
+                <div className="relative w-full h-60 xs:h-72 lg:h-96 overflow-hidden">
+                    <img src="/images/mgh_logo.png" className="w-3/4 absolute top-10 -left-1/4 blur sm:blur-md lg:blur-xl" />
+                    <div className="flex flex-row items-center w-full justify-center sm:justify-end flex-wrap space-x-3 absolute bottom-0 right-0 p-10">
                         <a href="https://metagamehub.medium.com" className="cursor-pointer" target="_blank" >
                             <FaMedium className="social-media-icon" />
                         </a>

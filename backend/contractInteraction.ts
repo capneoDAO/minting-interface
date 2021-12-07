@@ -1,5 +1,5 @@
 import { Interface } from "@ethersproject/abi";
-import { BigNumber, ethers, providers } from "ethers";
+import { ethers, providers } from "ethers";
 
 import mintAbi from "./abi/mintAbi.json"
 
@@ -8,7 +8,7 @@ const NFTContract = "0x657c7E3b1D32bc4e757a2648A004D2F50D83d6a0"
 const NFTContractAbi = new Interface(mintAbi)
 
 
-export const mintNFT = async (provider: providers.Web3Provider | undefined, quantity: BigNumber) => {
+export const mintNFT = async (provider: providers.Web3Provider | undefined, quantity: number) => {
     if (!provider) {
         return
     }
@@ -20,9 +20,15 @@ export const mintNFT = async (provider: providers.Web3Provider | undefined, quan
         NFTContractAbi,
         signer
     );
+    
+    let value;
+    if (process.env.NEXT_PUBLIC_PRICE) {
+        value = +process.env.NEXT_PUBLIC_PRICE * quantity
+        value = ethers.utils.parseEther(value.toString())
+    }
 
-    const result = await contract.mint({ quantity: quantity, value: process.env.NEXT_PUBLIC_PRICE })
-    return result
+    const transaction = await contract.mint(quantity, {value})
+    return transaction
 }
 
 export const getNFTQuantity = async (provider: providers.Web3Provider | undefined, address: string | undefined) => {
@@ -36,8 +42,8 @@ export const getNFTQuantity = async (provider: providers.Web3Provider | undefine
         provider
     );
 
-    const result = await contract.balanceOf(address)
-    return result
+    const transaction = await contract.balanceOf(address)
+    return transaction
 }
 
 
