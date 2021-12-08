@@ -122,10 +122,10 @@ const Home: NextPage = () => {
                             <img src="/images/nfts/1.gif" className="nft-image" />
                             <img src="/images/nfts/2.gif" className="nft-image" />
                             <img src="/images/nfts/3.jpg" className="nft-image" />
-                            <img src="/images/nfts/4.jpg" className="nft-image" />
-                            <img src="/images/nfts/5.jpg" className="nft-image" />
+                            {/* <img src="/images/nfts/4.jpg" className="nft-image" /> */}
+                            {/* <img src="/images/nfts/5.jpg" className="nft-image" />
                             <img src="/images/nfts/6.jpg" className="nft-image" />
-                            <img src="/images/nfts/7.jpg" className="nft-image" />
+                            <img src="/images/nfts/7.jpg" className="nft-image" /> */}
                             {/* <img src="/images/nfts/8.jpg" className="nft-image" />
                             <img src="/images/nfts/9.jpg" className="nft-image" /> */}
                             {/* <img src="/images/nfts/11.jpg" className="nft-image" />
@@ -137,10 +137,10 @@ const Home: NextPage = () => {
                             <img src="/images/nfts/1.gif" className="nft-image" />
                             <img src="/images/nfts/2.gif" className="nft-image" />
                             <img src="/images/nfts/3.jpg" className="nft-image" />
-                            <img src="/images/nfts/4.jpg" className="nft-image" />
-                            <img src="/images/nfts/5.jpg" className="nft-image" />
+                            {/* <img src="/images/nfts/4.jpg" className="nft-image" /> */}
+                            {/* <img src="/images/nfts/5.jpg" className="nft-image" />
                             <img src="/images/nfts/6.jpg" className="nft-image" />
-                            <img src="/images/nfts/7.jpg" className="nft-image" />
+                            <img src="/images/nfts/7.jpg" className="nft-image" /> */}
                             {/* <img src="/images/nfts/8.jpg" className="nft-image" />
                             <img src="/images/nfts/9.jpg" className="nft-image" /> */}
                             {/* <img src="/images/nfts/11.jpg" className="nft-image" />
