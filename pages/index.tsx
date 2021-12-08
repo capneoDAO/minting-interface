@@ -116,31 +116,31 @@ const Home: NextPage = () => {
                 <div className="flex flex-col w-full">
                     <h1 className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-pink-500 text-center mt-10 p-5">Meta NFT Portraits</h1>
 
-                    <div className="flex w-full min-w-max h-screen items-center">
-                        <div className="flex slideshow w-full h-2/4">
+                    <div className="flex w-full min-w-max h-screen items-center trick">
+                        <div className="flex slideshow w-full h-3/4">
                             <img src="/images/nfts/0.gif" className="nft-image" />
                             <img src="/images/nfts/1.gif" className="nft-image" />
                             <img src="/images/nfts/2.gif" className="nft-image" />
                             <img src="/images/nfts/3.jpg" className="nft-image" />
                             <img src="/images/nfts/4.jpg" className="nft-image" />
-                            {/* <img src="/images/nfts/5.jpg" className="nft-image" />
+                            <img src="/images/nfts/5.jpg" className="nft-image" />
                             <img src="/images/nfts/6.jpg" className="nft-image" />
-                            <img src="/images/nfts/7.jpg" className="nft-image" /> */}
+                            <img src="/images/nfts/7.jpg" className="nft-image" />
                             {/* <img src="/images/nfts/8.jpg" className="nft-image" />
                             <img src="/images/nfts/9.jpg" className="nft-image" /> */}
                             {/* <img src="/images/nfts/11.jpg" className="nft-image" />
                             <img src="/images/nfts/12.jpg" className="nft-image" /> */}
                         </div>
 
-                        <div className="flex slideshow w-full h-2/4">
+                        <div className="flex slideshow w-full h-3/4">
                             <img src="/images/nfts/0.gif" className="nft-image" />
                             <img src="/images/nfts/1.gif" className="nft-image" />
                             <img src="/images/nfts/2.gif" className="nft-image" />
                             <img src="/images/nfts/3.jpg" className="nft-image" />
                             <img src="/images/nfts/4.jpg" className="nft-image" />
-                            {/* <img src="/images/nfts/5.jpg" className="nft-image" />
+                            <img src="/images/nfts/5.jpg" className="nft-image" />
                             <img src="/images/nfts/6.jpg" className="nft-image" />
-                            <img src="/images/nfts/7.jpg" className="nft-image" /> */}
+                            <img src="/images/nfts/7.jpg" className="nft-image" />
                             {/* <img src="/images/nfts/8.jpg" className="nft-image" />
                             <img src="/images/nfts/9.jpg" className="nft-image" /> */}
                             {/* <img src="/images/nfts/11.jpg" className="nft-image" />

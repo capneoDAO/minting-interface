@@ -92,6 +92,10 @@
   100%{ transform:rotatey(360deg) }
 }
 
+.trick {
+  transform: translate3d(0, 0, 0);
+}
+
 /* .slideshow   img {
   display: block;
   min-width: 200px;
