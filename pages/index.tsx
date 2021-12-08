@@ -31,18 +31,27 @@ const Home: NextPage = () => {
     const [hash, setHash] = useState("")
     const [NFTs, setNFTs] = useState({})
     const [showNFTs, setShowNFTs] = useState(false)
-    const [number, setNumber] = useState(3)
+    const [number, setNumber] = useState(0)
 
     const increaseNumber = () => {
-        if (number < 11) {
+        if (number < 12) {
             setNumber(number + 1)
-        } else if (number === 11) {
-            setNumber(3)
+        } else if (number === 12) {
+            setNumber(0)
         }
     }
+
     useEffect(() => {
         setTimeout(increaseNumber, 3000)
     }, [number])
+
+    const getImageLink = () => {
+        if (number < 3) {
+            return `/images/nfts/${number}.gif`
+        } else {
+            return `/images/nfts/${number}.jpg`
+        }
+    }
 
     const calcPrice = () => {
         if (process.env.NEXT_PUBLIC_PRICE) {
@@ -130,7 +139,7 @@ const Home: NextPage = () => {
 
                     <div className="flex flex-col max-w-lg lg:max-w-full lg:flex-row select-none shadow-color bg-gray-900 rounded-xl p-5 xl:p-8 mx-5 sm:mx-20 lg:mx-0 items-stretch justify-evenly space-y-10 lg:space-y-0 space-x-0 lg:space-x-10 mt-20">
 
-                        <img src={`/images/nfts/${number}.jpg`} className="rounded-lg h-auto lg:h-96 xl:h-full" />
+                        <img src={getImageLink()} className="rounded-lg h-auto lg:h-96 xl:h-full" />
                         
 
                         <div className="flex flex-col justify-end p-1 px-0 lg:px-10 xl:px-20">
