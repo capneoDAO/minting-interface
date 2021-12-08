@@ -77,35 +77,20 @@
 
 .slideshow {
   animation: marquee 50s linear infinite;
+  display: block;
+}
 
+@keyframes marquee {
+	0%   { transform: translateX(0%); }
+	100% { transform: translateX(-100%); }
 }
 
 .nft-image {
   @apply h-full w-auto
 }
 
-.logo { 
-  animation: rotation 1.5s infinite linear; 
-}
-
-@keyframes rotation {
-  100%{ transform:rotatey(360deg) }
-}
-
 .trick {
   transform: translate3d(0, 0, 0);
-}
-
-/* .slideshow   img {
-  display: block;
-  min-width: 200px;
-  height: 250px;
-  margin: 0 1vw;
-} */
-
-@keyframes marquee {
-	0%   { transform: translateX(0%); }
-	100% { transform: translateX(-100%); }
 }
 
 html {
@@ -132,10 +117,4 @@ h4 {
 
 h6 {
   @apply text-3xl xs:text-4xl  sm:text-5xl lg:text-6xl font-lighters py-2;
-}
-
-
-.progress-ring__circle {
-  stroke-dashoffset: 250;
-  stroke-dasharray: 500 500;
 }

@@ -5,8 +5,14 @@ module.exports = {
   important: true,
   theme: {
     extend: {
+      keyframes: {
+        rotation: {
+          '100%': { transform: 'rotatey(360deg)' }
+        }
+      },
       animation: {
         'spin-slow': 'spin 1.5s linear infinite',
+        'rotate': 'rotation 1.5s infinite linear'
       },
       inset: {
         '1/5': '20%',
