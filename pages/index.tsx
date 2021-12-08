@@ -126,10 +126,10 @@ const Home: NextPage = () => {
                             <img src="/images/nfts/5.jpg" className="nft-image" />
                             <img src="/images/nfts/6.jpg" className="nft-image" />
                             <img src="/images/nfts/7.jpg" className="nft-image" />
-                            <img src="/images/nfts/8.jpg" className="nft-image" />
-                            <img src="/images/nfts/9.jpg" className="nft-image" />
-                            <img src="/images/nfts/11.jpg" className="nft-image" />
-                            <img src="/images/nfts/12.jpg" className="nft-image" />
+                            {/* <img src="/images/nfts/8.jpg" className="nft-image" />
+                            <img src="/images/nfts/9.jpg" className="nft-image" /> */}
+                            {/* <img src="/images/nfts/11.jpg" className="nft-image" />
+                            <img src="/images/nfts/12.jpg" className="nft-image" /> */}
                         </div>
 
                         <div className="flex slideshow w-full h-3/4">
@@ -141,10 +141,10 @@ const Home: NextPage = () => {
                             <img src="/images/nfts/5.jpg" className="nft-image" />
                             <img src="/images/nfts/6.jpg" className="nft-image" />
                             <img src="/images/nfts/7.jpg" className="nft-image" />
-                            <img src="/images/nfts/8.jpg" className="nft-image" />
-                            <img src="/images/nfts/9.jpg" className="nft-image" />
-                            <img src="/images/nfts/11.jpg" className="nft-image" />
-                            <img src="/images/nfts/12.jpg" className="nft-image" />
+                            {/* <img src="/images/nfts/8.jpg" className="nft-image" />
+                            <img src="/images/nfts/9.jpg" className="nft-image" /> */}
+                            {/* <img src="/images/nfts/11.jpg" className="nft-image" />
+                            <img src="/images/nfts/12.jpg" className="nft-image" /> */}
                         </div>
 
                     </div>
