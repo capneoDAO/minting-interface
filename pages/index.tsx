@@ -17,6 +17,8 @@ import WalletModal from "../components/WalletModal";
 import WalletButton from '../components/WalletButton';
 import TransactionModal from "../components/TransactionModal"
 
+// #00E091
+// #172721
 
 const Home: NextPage = () => {
     const { chainId, address } = useAppSelector(state => state.account)
@@ -47,9 +49,9 @@ const Home: NextPage = () => {
 
     const getImageLink = () => {
         if (number < 3) {
-            return `/images/nfts/${number}.gif`
+            return `/images/nfts/${number}.jpeg`
         } else {
-            return `/images/nfts/${number}.jpg`
+            return `/images/nfts/${number}.jpeg`
         }
     }
 
@@ -128,43 +130,48 @@ const Home: NextPage = () => {
             <main className="flex flex-col w-screen">
                 <div className="w-full flex justify-between items-center p-5 lg:p-10" >
                     <a href="https://www.metagamehub.io" target="_blank" className="transform hover:scale-110 transition-all duration-500 ease-in-out">
-                        <img src="/images/mgh_logo.png" className={`h-12 lg:h-18`} />
+                        <img src="/images/capneo-logo.png" className={`h-12 lg:h-18`} />
                     </a>
                     <WalletButton onClick={() => setOpenModal(true)} disconnectWallet={disconnectWallet} />
                 </div>
 
 
                 <div className="flex flex-col items-center w-full">
-                    <h1 className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-pink-500 text-center mt-10 p-5">Meta NFT Portraits</h1>
+                    <h2 className="text-white text-center mt-10 p-5">Public mint</h2>
 
-                    <div className="flex flex-col max-w-lg lg:max-w-full lg:flex-row select-none shadow-color bg-gray-900 rounded-xl p-5 xl:p-8 mx-5 sm:mx-20 lg:mx-0 items-stretch justify-evenly space-y-10 lg:space-y-0 space-x-0 lg:space-x-10 mt-20">
+                    <div className="flex flex-col max-w-lg lg:max-w-full lg:flex-row select-none rounded-xl p-5 xl:p-8 mx-5 sm:mx-20 lg:mx-0 items-stretch justify-evenly space-y-10 lg:space-y-0 space-x-0 lg:space-x-10 mt-20">
 
-                        <img src={getImageLink()} className="rounded-lg h-auto lg:h-96 xl:h-full" />
+                        <img src={getImageLink()} className="rounded h-auto w-72" />
                         
+                        <div className="flex flex-col justify-center p-1 w-[100vw] max-w-xl">
 
-                        <div className="flex flex-col justify-end p-1 px-0 lg:px-10 xl:px-20">
-
-                            <div className="flex items-center justify-between space-x-5 sm:space-x-10 mb-5 px-3">
-                                <p className="text-gray-400 font-medium text-2xl sm:text-3xl pt-1">Quantity: </p>
-                                <div className="flex items-center space-x-0 sm:space-x-1 justify-center">
-                                    <AiFillPlusCircle onClick={increase} className="text-4xl sm:text-5xl text-gray-700 hover:text-gray-600 transition-all ease-in-out duration-300 cursor-pointer" />
-                                    <p className="text-pink-600 text-5xl sm:text-6xl font-medium w-18 text-center pt-2">{quantity}</p>
-                                    <AiFillMinusCircle onClick={decrease} className="text-4xl sm:text-5xl text-gray-700 hover:text-gray-600 transition-all ease-in-out duration-300 cursor-pointer" />
-                                </div>
+                            <div className='flex w-full bg-white h-3 rounded mb-5'>
+                                <div className='bg-[#00E091] w-[20%] rounded' />
                             </div>
 
-                            <div className="flex items-center justify-between space-x-10 bg-gray-800 rounded-xl p-3 py-4 sm:py-5 mb-10">
-                                <p className="text-gray-400 font-medium text-2xl sm:text-3xl pt-1">Price: </p>
-                                <div className="flex items-end">
-                                    <p className="text-gray-300 text-3xl sm:text-4xl font-medium w-24 text-center pt-1">{calcPrice()}</p>
-                                    <p className="text-gray-400 text-2xl sm:text-3xl pt-1">ETH</p>
-                                </div>
+                            <div className='flex justify-between text-white font-medium text-lg'>
+                                <p>Total available:</p>
+                                <p>12500</p>
                             </div>
+
+                            <div className='flex justify-between text-[#00E091] font-medium text-lg'>
+                                <p>Already mined:</p>
+                                <p>100</p>
+                            </div>
+
+                            <input type='number' placeholder="amount" className='my-10 w-32 rounded px-2 py-2 text-xl font-medium self-center'/>
+
+                            <div className='flex space-x-5 self-center'>
+                                <img src="/images/ETH.webp" className='h-12'/>
+                                <img src="/images/USDC.webp" className='h-12'/>
+                                <img src="/images/USDT.webp" className='h-12'/>
+                            </div>
+
+                            <p className='self-center mt-10 text-white font-medium text-2xl'>Price: $500</p>
 
                             {!web3Provider && (
-                                <button onClick={() => setOpenModal(true)} className="z-30 mt-4 relative flex justify-center items-center transition ease-in-out duration-500 rounded-xl w-full py-3 sm:py-4 group self-center">
-                                    <div className="h-full w-full absolute bg-gradient-to-br transition-all ease-in-out duration-300 from-pink-600 to-blue-500 rounded-xl opacity-60 group-hover:opacity-80" />
-                                    <span className="pt-1 z-10 text-gray-200 font-medium text-lg sm:text-xl">Connect Wallet</span>
+                                <button onClick={() => setOpenModal(true)} className="self-center mt-10 border hover:border-[#00E091] hover:text-[#00E091] w-34 xs:w-36 sm:w-44 md:w-52 flex items-center justify-center cursor-pointer text-gray-200 font-medium text-base sm:text-lg md:text-xl rounded-xl p-1.5 sm:p-2 md:p-3 transition ease-in-out duration-300">
+                                    <span className="pt-1 z-10 font-medium text-lg sm:text-xl">Connect Wallet</span>
                                 </button>
                             )}
                             {web3Provider && chainId === Chains.ETHEREUM_MAINNET.chainId && (<>
@@ -194,7 +201,7 @@ const Home: NextPage = () => {
 
                 {loading && (
                     <div className="w-full h-full self-center flex items-center justify-center mt-10">
-                        <img src="/images/mgh_logo.png" className={` h-24 w-24 animate-rotate`} />
+                        <img src="/images/capneo-logo.png" className={` h-24 w-24 animate-rotate`} />
                     </div>
                 )}
 
@@ -218,8 +225,8 @@ const Home: NextPage = () => {
                 )}
 
 
-                <div className="relative w-full h-60 xs:h-72 lg:h-96 overflow-hidden mt-10">
-                    <img src="/images/mgh_logo.png" className="w-3/4 absolute top-10 -left-1/4 blur sm:blur-md lg:blur-xl" />
+                {/* <div className="relative w-full h-60 xs:h-72 lg:h-96 overflow-hidden mt-10">
+                    <img src="/images/capneo-logo.png" className="w-3/4 absolute top-10 -left-1/4 blur sm:blur-md lg:blur-xl" />
                     <div className="flex flex-row items-center w-full justify-center sm:justify-end flex-wrap space-x-3 absolute bottom-0 right-0 p-8 xs:p-10">
                         <a href="https://metagamehub.medium.com" className="cursor-pointer" target="_blank" >
                             <FaMedium className="social-media-icon" />
@@ -248,7 +255,7 @@ const Home: NextPage = () => {
                             <FaEthereum className="social-media-icon" />
                         </a>
                     </div>
-                </div>
+                </div> */}
             </main>
 
 
