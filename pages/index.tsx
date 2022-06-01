@@ -8,7 +8,7 @@ import { AiFillMinusCircle } from "react-icons/ai"
 import { FaLinkedin, FaTelegramPlane, FaEthereum, FaInstagram, FaTwitter, FaMedium, FaYoutube } from "react-icons/fa";
 
 import useConnectWeb3 from '../backend/connectWeb3';
-import { getNFTs, getNFTQuantity, mintNFT } from '../backend/contractInteraction';
+import { approveUSDT, getUSDTAllowance, mintOne, mintNFTs } from '../backend/contractInteraction';
 import changeChain from '../backend/changeChain';
 import { Chains } from '../lib/chains';
 import { useAppSelector } from '../state/hooks';
@@ -16,6 +16,7 @@ import { useAppSelector } from '../state/hooks';
 import WalletModal from "../components/WalletModal";
 import WalletButton from '../components/WalletButton';
 import TransactionModal from "../components/TransactionModal"
+import useContractInfo from '../backend/useContractInfo';
 
 // #00E091
 // #172721
@@ -23,7 +24,9 @@ import TransactionModal from "../components/TransactionModal"
 const Home: NextPage = () => {
     const { chainId, address } = useAppSelector(state => state.account)
     const { web3Provider, disconnectWallet } = useConnectWeb3();
+    const { activePhase, maxSupply, mintingFee, totalSupply } = useContractInfo(web3Provider, address, chainId)
 
+    const [paymentMethod, setPaymentMethod] = useState("USDT")
     const [quantity, setQuantity] = useState(1)
     const [openModal, setOpenModal] = useState(false)
     const [transactionLoading, setTransactionLoading] = useState(true)
@@ -34,11 +37,12 @@ const Home: NextPage = () => {
     const [NFTs, setNFTs] = useState({})
     const [showNFTs, setShowNFTs] = useState(false)
     const [number, setNumber] = useState(0)
+    const [USDTAllowance, setUSDTAllowance] = useState(0)
 
     const increaseNumber = () => {
-        if (number < 12) {
+        if (number < 20) {
             setNumber(number + 1)
-        } else if (number === 12) {
+        } else if (number === 20) {
             setNumber(0)
         }
     }
@@ -56,14 +60,14 @@ const Home: NextPage = () => {
     }
 
     const calcPrice = () => {
-        if (process.env.NEXT_PUBLIC_PRICE) {
-            const finalPrice = (+process.env.NEXT_PUBLIC_PRICE) * quantity
-            return finalPrice.toFixed(2)
+        if (mintingFee) {
+            const finalPrice = (+mintingFee) * quantity
+            return finalPrice
         }
     }
 
     const increase = () => {
-        if (quantity < 10) {
+        if (quantity < 20) {
             setQuantity(quantity + 1)
         }
     }
@@ -96,20 +100,23 @@ const Home: NextPage = () => {
 
     const mint = async () => {
         setShowNFTs(false)
-        const transaction = await mintNFT(web3Provider, quantity)
+        if (quantity === 1) {
+            const transaction = await mintOne(web3Provider)
+            await processTransaction(transaction)
+        } else {
+            const transaction = await mintNFTs(web3Provider, quantity)
+            await processTransaction(transaction)
+        }
+    }
+
+    const approve = async () => {
+        const transaction = await approveUSDT(web3Provider, address)
         await processTransaction(transaction)
     }
 
-    const getData = async () => {
-        setShowNFTs(false)
-        setLoading(true)
-        const qty: BigNumber = await getNFTQuantity(web3Provider, address)
-        const result = await getNFTs(web3Provider, address, qty.toNumber())
-        if (result) {
-            setNFTs(result)
-        }
-        setLoading(false)
-        setShowNFTs(true)
+    const getAllowance = async () => {
+        const allowance = await getUSDTAllowance(web3Provider, address)
+        setUSDTAllowance(parseInt(allowance))
     }
 
 
@@ -127,7 +134,7 @@ const Home: NextPage = () => {
                 <TransactionModal onDismiss={() => { setTransactionModal(false); !transactionLoading && window.location.reload() }} loading={transactionLoading} success={success} hash={hash} chainId={chainId} />
             )}
 
-            <main className="flex flex-col w-screen">
+            <main className="flex flex-col w-screen pb-72">
                 <div className="w-full flex justify-between items-center p-5 lg:p-10" >
                     <a href="https://www.metagamehub.io" target="_blank" className="transform hover:scale-110 transition-all duration-500 ease-in-out">
                         <img src="/images/capneo-logo.png" className={`h-12 lg:h-18`} />
@@ -142,53 +149,68 @@ const Home: NextPage = () => {
                     <div className="flex flex-col max-w-lg lg:max-w-full lg:flex-row select-none rounded-xl p-5 xl:p-8 mx-5 sm:mx-20 lg:mx-0 items-stretch justify-evenly space-y-10 lg:space-y-0 space-x-0 lg:space-x-10 mt-20">
 
                         <img src={getImageLink()} className="rounded h-auto w-72" />
-                        
+
                         <div className="flex flex-col justify-center p-1 w-[100vw] max-w-xl">
 
                             <div className='flex w-full bg-white h-3 rounded mb-5'>
-                                <div className='bg-[#00E091] w-[20%] rounded' />
+                                <div className={`bg-[#00E091] w-[20%] rounded`} />
                             </div>
 
                             <div className='flex justify-between text-white font-medium text-lg'>
                                 <p>Total available:</p>
-                                <p>12500</p>
+                                <p>{maxSupply}</p>
                             </div>
 
                             <div className='flex justify-between text-[#00E091] font-medium text-lg'>
                                 <p>Already mined:</p>
-                                <p>100</p>
+                                <p>{totalSupply}</p>
                             </div>
 
-                            <input type='number' placeholder="amount" className='my-10 w-32 rounded px-2 py-2 text-xl font-medium self-center'/>
-
-                            <div className='flex space-x-5 self-center'>
-                                <img src="/images/ETH.webp" className='h-12'/>
-                                <img src="/images/USDC.webp" className='h-12'/>
-                                <img src="/images/USDT.webp" className='h-12'/>
+                            <div className="flex items-center mt-10 justify-between space-x-5 sm:space-x-10 mb-5 px-3">
+                                <p className="text-white font-medium text-2xl">Quantity: </p>
+                                <div className="flex items-center space-x-0 sm:space-x-1 justify-center">
+                                    <AiFillMinusCircle onClick={decrease} className="text-3xl sm:text-4xl text-gray-700 hover:text-gray-600 transition-all ease-in-out duration-300 cursor-pointer" />
+                                    <p className="text-[#00E091] text-4xl sm:text-5xl font-medium w-18 text-center pt-2">{quantity}</p>
+                                    <AiFillPlusCircle onClick={increase} className="text-3xl sm:text-4xl text-gray-700 hover:text-gray-600 transition-all ease-in-out duration-300 cursor-pointer" />
+                                </div>
                             </div>
 
-                            <p className='self-center mt-10 text-white font-medium text-2xl'>Price: $500</p>
+                            <div className="flex items-center justify-between space-x-5 sm:space-x-10 mb-5 px-3">
+                                <p className="text-white font-medium text-2xl">Price: </p>
+                                <p className='text-white font-medium text-2xl'>${calcPrice()}</p>
+                            </div>
+
+                            <div className="flex items-center justify-between space-x-5 sm:space-x-10 mb-5 px-3">
+                                <p className="text-white font-medium text-2xl">Payment: </p>
+                                <div className='flex space-x-5'>
+                                    <img src="/images/ETH.webp" onClick={() => setPaymentMethod("ETH")} className={`h-12 ${paymentMethod === "ETH" ? "opacity-100" : "opacity-20"}`} />
+                                    <img src="/images/USDC.webp" onClick={() => setPaymentMethod("USDC")} className={`h-12 ${paymentMethod === "USDC" ? "opacity-100" : "opacity-20"}`} />
+                                    <img src="/images/USDT.webp" onClick={() => { setPaymentMethod("USDT"); getAllowance() }} className={`h-12 ${paymentMethod === "USDT" ? "opacity-100" : "opacity-20"}`} />
+                                </div>
+                            </div>
+
+
 
                             {!web3Provider && (
                                 <button onClick={() => setOpenModal(true)} className="self-center mt-10 border hover:border-[#00E091] hover:text-[#00E091] w-34 xs:w-36 sm:w-44 md:w-52 flex items-center justify-center cursor-pointer text-gray-200 font-medium text-base sm:text-lg md:text-xl rounded-xl p-1.5 sm:p-2 md:p-3 transition ease-in-out duration-300">
                                     <span className="pt-1 z-10 font-medium text-lg sm:text-xl">Connect Wallet</span>
                                 </button>
                             )}
-                            {web3Provider && chainId === Chains.ETHEREUM_MAINNET.chainId && (<>
-                                <button disabled={loading} onClick={mint} className="disabled:opacity-50 disabled:cursor-default mt-4 relative flex justify-center items-center shadow-black rounded-xl w-full py-3 sm:py-4 group self-center">
-                                    <div className="h-full w-full absolute bg-pink-600 transition-all ease-in-out duration-300 rounded-xl opacity-100 group-disabled:group-hover:opacity-100 group-hover:opacity-80" />
-                                    <span className="pt-1 z-10 text-grey-darkest font-medium text-lg sm:text-xl">Mint NFTs</span>
-                                </button>
-                                <button disabled={loading} onClick={getData} className="disabled:opacity-50 disabled:cursor-default mt-4 relative flex justify-center items-center transition ease-in-out duration-300 rounded-xl w-full py-3 sm:py-4 group self-center">
-                                    <div className="h-full w-full absolute border border-pink-600 transition-all ease-in-out duration-300 rounded-xl opacity-100 group-disabled:group-hover:opacity-100 group-hover:opacity-80" />
-                                    <span className="pt-1 z-10 text-pink-600 font-medium text-lg sm:text-xl transition-all ease-in-out duration-300 text-opacity-100 group-disabled:group-hover:text-opacity-100 group-hover:text-opacity-80">Show my NFTs</span>
+                            {web3Provider && chainId === Chains.ETHEREUM_RINKEBY.chainId && (<>
+                                <button disabled={loading} onClick={mint} className="self-center mt-10 border hover:border-[#00E091] hover:text-[#00E091] w-34 xs:w-36 sm:w-44 md:w-52 flex items-center justify-center cursor-pointer text-gray-200 font-medium text-base sm:text-lg md:text-xl rounded-xl p-1.5 sm:p-2 md:p-3 transition ease-in-out duration-300">
+                                    <span className="pt-1 z-10 font-medium text-lg sm:text-xl">Mint NFTs</span>
                                 </button>
                             </>
                             )}
-                            {web3Provider && chainId !== Chains.ETHEREUM_MAINNET.chainId && (
-                                <button onClick={() => { changeChain(web3Provider.provider, Chains.ETHEREUM_MAINNET.chainId) }} className="z-30 mt-4 relative flex justify-center items-center transition ease-in-out duration-500 rounded-xl w-full py-3 sm:py-4 group self-center">
-                                    <div className="h-full w-full absolute bg-gradient-to-br transition-all ease-in-out duration-300 from-pink-600 to-blue-500 rounded-xl opacity-60 group-hover:opacity-80" />
-                                    <span className="pt-1 z-10 text-gray-200 font-medium text-lg sm:text-xl">Switch to Ethereum</span>
+                            {web3Provider && chainId !== Chains.ETHEREUM_RINKEBY.chainId && (
+                                <button disabled={loading} onClick={() => { changeChain(web3Provider.provider, Chains.ETHEREUM_RINKEBY.chainId) }} className="self-center mt-10 border hover:border-[#00E091] hover:text-[#00E091] w-34 xs:w-36 sm:w-44 md:w-64 flex items-center justify-center cursor-pointer text-gray-200 font-medium text-base sm:text-lg md:text-xl rounded-xl p-1.5 sm:p-2 md:p-3 transition ease-in-out duration-300">
+                                    <span className="pt-1 z-10 font-medium text-lg sm:text-xl">Switch to Rinkeby</span>
+                                </button>
+                            )}
+
+                            {web3Provider && paymentMethod === "USDT" && !+USDTAllowance && chainId === Chains.ETHEREUM_RINKEBY.chainId && (
+                                <button disabled={loading} onClick={approve} className="self-center mt-10 border hover:border-[#00E091] hover:text-[#00E091] w-34 xs:w-36 sm:w-44 md:w-64 flex items-center justify-center cursor-pointer text-gray-200 font-medium text-base sm:text-lg md:text-xl rounded-xl p-1.5 sm:p-2 md:p-3 transition ease-in-out duration-300">
+                                    <span className="pt-1 z-10 font-medium text-lg sm:text-xl">Approve USDT</span>
                                 </button>
                             )}
                         </div>
@@ -205,7 +227,7 @@ const Home: NextPage = () => {
                     </div>
                 )}
 
-                {showNFTs && address && (
+                {/* {showNFTs && address && (
                     Object.entries(NFTs).length === 0 ? (
                         <p className="font-medium text-lg text-gray-300 my-10 text-center self-center px-5">You have no Meta NFT Portraits in your Wallet</p>
                     ) : (
@@ -222,7 +244,7 @@ const Home: NextPage = () => {
                             })}
                         </div>
                     )
-                )}
+                )} */}
 
 
                 {/* <div className="relative w-full h-60 xs:h-72 lg:h-96 overflow-hidden mt-10">

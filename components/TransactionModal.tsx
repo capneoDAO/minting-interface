@@ -13,10 +13,10 @@ const TransactionModal = ({ onDismiss, loading, success, hash, chainId }: any) =
     return (
         <div className="fixed top-0 left-0 flex items-center justify-center h-screen w-screen z-50">
             <div onClick={onDismiss} className="absolute h-full w-full bg-black bg-opacity-40 backdrop-filter backdrop-blur" />
-            <div className="z-10 w-96 transform scale-85 sm:scale-100 flex flex-col items-center shadow-black text-center p-5 pt-10 space-y-10 rounded-xl border border-opacity-20 bg-grey-darkest bg-opacity-50 backdrop-filter backdrop-blur-xl text-gray-200">
+            <div className="z-10 w-96 transform scale-85 sm:scale-100 flex flex-col items-center shadow-black text-center p-5 pt-10 space-y-10 rounded-xl border border-opacity-20 bg-[#172721] bg-opacity-40 backdrop-filter backdrop-blur-xl text-gray-200">
                 {loading &&
                     <><img src="/images/capneo-logo.png" className={` h-24 w-24 logo`} />
-                        <p className="text-3xl text-blue-400 font-medium text-center">Processing Transaction</p></>
+                        <p className="text-3xl text-white font-medium text-center">Processing Transaction</p></>
                 }
                 {!loading && (success ? (
                     <><BsCheckCircleFill className="text-8xl text-green-400" />
