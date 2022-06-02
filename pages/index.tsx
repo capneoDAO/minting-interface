@@ -8,10 +8,11 @@ import { AiFillMinusCircle } from "react-icons/ai"
 import { FaLinkedin, FaTelegramPlane, FaEthereum, FaInstagram, FaTwitter, FaMedium, FaYoutube } from "react-icons/fa";
 
 import useConnectWeb3 from '../backend/connectWeb3';
-import { approveUSDT, getUSDTAllowance, mintOne, mintNFTs } from '../backend/contractInteraction';
+import { approveUSDT, getUSDTAllowance, mintMany, mintSingle } from '../backend/contractInteraction';
 import changeChain from '../backend/changeChain';
 import { Chains } from '../lib/chains';
 import { useAppSelector } from '../state/hooks';
+import { Currency } from '../lib/enums';
 
 import WalletModal from "../components/WalletModal";
 import WalletButton from '../components/WalletButton';
@@ -26,7 +27,7 @@ const Home: NextPage = () => {
     const { web3Provider, disconnectWallet } = useConnectWeb3();
     const { activePhase, maxSupply, mintingFee, totalSupply } = useContractInfo(web3Provider, address, chainId)
 
-    const [paymentMethod, setPaymentMethod] = useState("USDT")
+    const [paymentMethod, setPaymentMethod] = useState(Currency.ETH)
     const [quantity, setQuantity] = useState(1)
     const [openModal, setOpenModal] = useState(false)
     const [transactionLoading, setTransactionLoading] = useState(true)
@@ -101,10 +102,10 @@ const Home: NextPage = () => {
     const mint = async () => {
         setShowNFTs(false)
         if (quantity === 1) {
-            const transaction = await mintOne(web3Provider)
+            const transaction = await mintSingle(web3Provider, mintingFee, paymentMethod)
             await processTransaction(transaction)
         } else {
-            const transaction = await mintNFTs(web3Provider, quantity)
+            const transaction = await mintMany(web3Provider, quantity)
             await processTransaction(transaction)
         }
     }
@@ -183,9 +184,9 @@ const Home: NextPage = () => {
                             <div className="flex items-center justify-between space-x-5 sm:space-x-10 mb-5 px-3">
                                 <p className="text-white font-medium text-2xl">Payment: </p>
                                 <div className='flex space-x-5'>
-                                    <img src="/images/ETH.webp" onClick={() => setPaymentMethod("ETH")} className={`h-12 ${paymentMethod === "ETH" ? "opacity-100" : "opacity-20"}`} />
-                                    <img src="/images/USDC.webp" onClick={() => setPaymentMethod("USDC")} className={`h-12 ${paymentMethod === "USDC" ? "opacity-100" : "opacity-20"}`} />
-                                    <img src="/images/USDT.webp" onClick={() => { setPaymentMethod("USDT"); getAllowance() }} className={`h-12 ${paymentMethod === "USDT" ? "opacity-100" : "opacity-20"}`} />
+                                    <img src="/images/ETH.webp" onClick={() => setPaymentMethod(Currency.ETH)} className={`h-12 ${paymentMethod === Currency.ETH ? "opacity-100" : "opacity-20"}`} />
+                                    <img src="/images/USDC.webp" onClick={() => setPaymentMethod(Currency.USDC)} className={`h-12 ${paymentMethod === Currency.USDC ? "opacity-100" : "opacity-20"}`} />
+                                    <img src="/images/USDT.webp" onClick={() => { setPaymentMethod(Currency.USDT); getAllowance() }} className={`h-12 ${paymentMethod === Currency.USDT ? "opacity-100" : "opacity-20"}`} />
                                 </div>
                             </div>
 
@@ -208,7 +209,7 @@ const Home: NextPage = () => {
                                 </button>
                             )}
 
-                            {web3Provider && paymentMethod === "USDT" && !+USDTAllowance && chainId === Chains.ETHEREUM_RINKEBY.chainId && (
+                            {web3Provider && paymentMethod === Currency.USDT && !+USDTAllowance && chainId === Chains.ETHEREUM_RINKEBY.chainId && (
                                 <button disabled={loading} onClick={approve} className="self-center mt-10 border hover:border-[#00E091] hover:text-[#00E091] w-34 xs:w-36 sm:w-44 md:w-64 flex items-center justify-center cursor-pointer text-gray-200 font-medium text-base sm:text-lg md:text-xl rounded-xl p-1.5 sm:p-2 md:p-3 transition ease-in-out duration-300">
                                     <span className="pt-1 z-10 font-medium text-lg sm:text-xl">Approve USDT</span>
                                 </button>

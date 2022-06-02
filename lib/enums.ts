@@ -14,3 +14,9 @@ export enum Provider {
     METAMASK = "metamask",
     WALLETCONNECT = "walletconnect"
 }
+
+export enum Currency {
+    USDT = "USDT",
+    USDC = "USDC",
+    ETH = "ETH"
+}
