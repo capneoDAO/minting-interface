@@ -1,5 +1,8 @@
 import { supportedChains } from './chains'
 import { IChainData } from './types'
+import { MerkleTree } from "merkletreejs"
+import { keccak256 } from "ethereum-cryptography/keccak"
+import { ethers } from "ethers";
 
 
 export function getChainData(chainId: number | undefined): IChainData | undefined {
@@ -19,4 +22,34 @@ export function ellipseAddress(address = '', width = 5): string {
     return ''
   }
   return `${address.slice(0, width)}...${address.slice(-width)}`
+}
+
+
+
+export function splitSig(sig: string) {
+  if (sig.length != 132) throw "invalid signature length";
+  let signatureWithoutPrefix = sig.slice(2);
+  return {
+    v: '0x' + signatureWithoutPrefix.slice(128, 130),
+    r: '0x' + signatureWithoutPrefix.slice(0, 64),
+    s: '0x' + signatureWithoutPrefix.slice(64, 128)
+  }
+}
+
+export function getLeaf(account: string) {
+  return Buffer.from(
+    ethers.utils.solidityKeccak256(['address'], [account]).slice(2), 'hex'
+  );
+}
+
+export function getProof(account: string, WhitelistArray: any[]) {
+  let proof = [];
+  const leaves = WhitelistArray.map(address => getLeaf(address));
+  const tree = new MerkleTree(leaves, keccak256, { sort: true });
+  for (let i = 0; i < tree.getProof(getLeaf(account)).length; i++) {
+    proof.push(
+      '0x' + tree.getProof(getLeaf(account))[i]["data"].toString('hex')
+    )
+  }
+  return proof;
 }

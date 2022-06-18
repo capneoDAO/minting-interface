@@ -36,7 +36,6 @@ const Home: NextPage = () => {
     const [success, setSuccess] = useState(true)
     const [hash, setHash] = useState("")
     const [NFTs, setNFTs] = useState({})
-    const [showNFTs, setShowNFTs] = useState(false)
     const [number, setNumber] = useState(0)
     const [USDTAllowance, setUSDTAllowance] = useState(0)
 
@@ -100,13 +99,14 @@ const Home: NextPage = () => {
     }
 
     const mint = async () => {
-        setShowNFTs(false)
-        if (quantity === 1) {
-            const transaction = await mintSingle(web3Provider, mintingFee, paymentMethod)
-            await processTransaction(transaction)
-        } else {
-            const transaction = await mintMany(web3Provider, quantity)
-            await processTransaction(transaction)
+        if (totalSupply < maxSupply && address) {
+            if (quantity === 1) {
+                const transaction = await mintSingle(web3Provider, address, mintingFee, paymentMethod)
+                await processTransaction(transaction)
+            } else {
+                const transaction = await mintMany(web3Provider, address, mintingFee, paymentMethod, quantity)
+                await processTransaction(transaction)
+            }
         }
     }
 
@@ -119,7 +119,6 @@ const Home: NextPage = () => {
         const allowance = await getUSDTAllowance(web3Provider, address)
         setUSDTAllowance(parseInt(allowance))
     }
-
 
     return (
         <>
@@ -154,7 +153,7 @@ const Home: NextPage = () => {
                         <div className="flex flex-col justify-center p-1 w-[100vw] max-w-xl">
 
                             <div className='flex w-full bg-white h-3 rounded mb-5'>
-                                <div className={`bg-[#00E091] w-[20%] rounded`} />
+                                <div className={`bg-[#00E091] rounded w-[1%] ${totalSupply / maxSupply > 0.05 && "w-[5%]"} ${totalSupply / maxSupply > 0.1 && "w-[10%]"} ${totalSupply / maxSupply > 0.15 && "w-[15%]"} ${totalSupply / maxSupply > 0.2 && "w-[20%]"} ${totalSupply / maxSupply > 0.25 && "w-[25%]"} ${totalSupply / maxSupply > 0.3 && "w-[30%]"} ${totalSupply / maxSupply > 0.35 && "w-[35%]"} ${totalSupply / maxSupply > 0.4 && "w-[40%]"} ${totalSupply / maxSupply > 0.45 && "w-[45%]"} ${totalSupply / maxSupply > 0.5 && "w-[50%]"} ${totalSupply / maxSupply > 0.55 && "w-[55%]"} ${totalSupply / maxSupply > 0.6 && "w-[60%]"} ${totalSupply / maxSupply > 0.65 && "w-[65%]"} ${totalSupply / maxSupply > 0.7 && "w-[70%]"} ${totalSupply / maxSupply > 0.75 && "w-[75%]"} ${totalSupply / maxSupply > 0.8 && "w-[80%]"} ${totalSupply / maxSupply > 0.85 && "w-[85%]"} ${totalSupply / maxSupply > 0.9 && "w-[90%]"} ${totalSupply / maxSupply > 0.95 && "w-[95%]"} ${totalSupply / maxSupply === 1 && "w-[100%]"}`} />
                             </div>
 
                             <div className='flex justify-between text-white font-medium text-lg'>

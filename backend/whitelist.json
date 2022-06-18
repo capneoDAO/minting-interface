@@ -1,0 +1,15 @@
+{
+    "root":"0x042377cb3f40daf42a7aa24facac5e4b66089b4c18947e19025773dfde529e8b",
+    "entries":[
+        {
+            "address":"0xFca6b83AfBBB0d66A13a06Ec31fA8e27E5188ca8",
+            "leaf":"e01b4214512dcc92faf14170155c88cc630ae6d54c3537bc2c9db24293541298",
+            "proof":["0xe8c59cf4c625f98cc3ff95679838e85cfd50d7e439683921503e37c22911a06a"]
+        },
+        {
+            "address":"0x382511Ab458A8e55be45F81BDb78c0b25E2148F2",
+            "leaf":"e8c59cf4c625f98cc3ff95679838e85cfd50d7e439683921503e37c22911a06a",
+            "proof":["0xe01b4214512dcc92faf14170155c88cc630ae6d54c3537bc2c9db24293541298"]
+        }
+    ]
+}

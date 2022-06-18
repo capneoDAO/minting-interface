@@ -1,12 +1,17 @@
 import { Interface } from "@ethersproject/abi";
 import { ethers, providers } from "ethers";
-import { formatEther, formatUnits, parseUnits } from "ethers/lib/utils";
+import { formatEther, formatUnits, parseUnits, splitSignature } from "ethers/lib/utils";
 import { Chains } from "../lib/chains";
 import { Currency } from "../lib/enums";
+import { getProof, splitSig } from "../lib/utilities";
 
 import mintAbi from "./abi/mintAbi.json"
 import usdtAbi from "./abi/usdtAbi.json"
-
+// import whitelist from "./whitelist.json"
+const whitelist = [
+    "0xFca6b83AfBBB0d66A13a06Ec31fA8e27E5188ca8",
+    "0x382511Ab458A8e55be45F81BDb78c0b25E2148F2"
+]
 
 const NFTContract = "0xe9c832BD6c97b38E066092861E3A26793507Db38"
 const NFTContractAbi = new Interface(mintAbi)
@@ -14,10 +19,45 @@ const NFTContractAbi = new Interface(mintAbi)
 const USDTContract = "0xFe2cB7E38262FAa2Aaf1a9B5eD6b3DAFd0A98Af6"
 const USDTContractAbi = new Interface(usdtAbi)
 
-console.log(USDTContractAbi)
+// console.log(NFTContractAbi)
+
+const DOMAIN = {
+    name: "USD Coin",
+    version: "2",
+    chainId: "0x04",
+    verifyingContract: "0x1F8F51a93930D106C22Fc96c5DC0A6A518a78789"
+}
+const types = {
+    ReceiveWithAuthorization: [
+        {
+            name: "from",
+            type: "address"
+        },
+        {
+            name: "to",
+            type: "address"
+        },
+        {
+            name: "value",
+            type: "uint256"
+        },
+        {
+            name: "validAfter",
+            type: "uint256"
+        },
+        {
+            name: "validBefore",
+            type: "uint256"
+        },
+        {
+            name: "nonce",
+            type: "bytes32"
+        }
+    ]
+}
 
 
-export const mintSingle = async (provider: providers.Web3Provider | undefined, mintingFee: number, currency: Currency) => {
+export const mintSingle = async (provider: providers.Web3Provider | undefined, address: string, mintingFee: number, currency: Currency) => {
     if (!provider) {
         return
     }
@@ -30,44 +70,54 @@ export const mintSingle = async (provider: providers.Web3Provider | undefined, m
         signer
     );
 
-
+    const proof = getProof(address, whitelist)
 
     if (currency === Currency.USDT) {
-        const transaction = await contract.mintSingle("0xFe2cB7E38262FAa2Aaf1a9B5eD6b3DAFd0A98Af6", [])
+        const transaction = await contract.mintSingle("0xFe2cB7E38262FAa2Aaf1a9B5eD6b3DAFd0A98Af6", proof)
         return transaction
+
     } else if (currency === Currency.ETH) {
-        const ethContract = new ethers.Contract(
-            "0x01BE23585060835E02B77ef475b0Cc51aA1e0709",
-            USDTContractAbi,
-            signer
-        );
-        console.log(formatEther(await ethContract.balanceOf("0xFca6b83AfBBB0d66A13a06Ec31fA8e27E5188ca8")))
-        const currentEthPrice = +formatUnits(await contract.getLatestEthPrice(), 6) * 1.01
-        let value
-        value = (+mintingFee * 1) * 1.01
-        value = ethers.utils.parseEther((value / currentEthPrice).toString())
-        // console.log(value)
-        console.log()
-        const transaction = await contract.mintSingle("0x01BE23585060835E02B77ef475b0Cc51aA1e0709", [], { value })
-        return transaction
+
+        const currentEthPrice = +formatUnits(await contract.getLatestEthPrice(), 6) * 1.1
+        const finalMintingFee = mintingFee * 1.1
+        const value = ethers.utils.parseEther((finalMintingFee / currentEthPrice).toString())
+
+        if (address && +formatEther(await provider.getBalance(address)) > (finalMintingFee / currentEthPrice)) {
+            const proof = getProof(address, whitelist)
+            const transaction = await contract.mintSingle("0x01BE23585060835E02B77ef475b0Cc51aA1e0709", proof, { value })
+            return transaction
+        }
+
+
     } else if (currency === Currency.USDC) {
         const usdcContract = new ethers.Contract(
             "0x1F8F51a93930D106C22Fc96c5DC0A6A518a78789",
             USDTContractAbi,
             signer
         );
-        const nonce = await usdcContract.nonces("0xFca6b83AfBBB0d66A13a06Ec31fA8e27E5188ca8")
-        console.log(nonce)
-        console.log(formatEther(await usdcContract.nonces("0xFca6b83AfBBB0d66A13a06Ec31fA8e27E5188ca8")))
-        const transaction = await contract.mintWithUSDCPermit(1, [], nonce, )
-        // return transaction
-    }
 
+        const nonce = await usdcContract.nonces(address)
+        const hexNonce = ethers.utils.hexZeroPad(nonce, 32)
+        const value = {
+            from: address,
+            to: NFTContract,  // testing contract address on rinkeby or prod address on mainnet
+            value: mintingFee, // minting fee * amount
+            validAfter: 0,  // 0
+            validBefore: ethers.constants.MaxUint256, // approximate end of sale is specified in the contract. For Testing:  2**256 - 1
+            nonce: hexNonce // has to be unique for the user
+        }
+
+        const sig = await signer._signTypedData(DOMAIN, types, value)
+        const splittedSig = splitSignature(sig)
+
+        const transaction = await contract.mintWithUSDCPermit(1, proof, hexNonce, splittedSig.v, splittedSig.r, splittedSig.s)
+        return transaction
+    }
 
 }
 
 
-export const mintMany = async (provider: providers.Web3Provider | undefined, quantity: number) => {
+export const mintMany = async (provider: providers.Web3Provider | undefined, address: string, mintingFee: number, currency: Currency, quantity: number) => {
     if (!provider) {
         return
     }
@@ -80,9 +130,50 @@ export const mintMany = async (provider: providers.Web3Provider | undefined, qua
         signer
     );
 
+    const proof = getProof(address, whitelist)
 
-    const transaction = await contract.mintMany("0xFe2cB7E38262FAa2Aaf1a9B5eD6b3DAFd0A98Af6", quantity, [])
-    return transaction
+    if (currency === Currency.USDT) {
+
+        const transaction = await contract.mintMany("0xFe2cB7E38262FAa2Aaf1a9B5eD6b3DAFd0A98Af6", quantity, proof)
+        return transaction
+
+    } else if (currency === Currency.ETH) {
+
+        const currentEthPrice = +formatUnits(await contract.getLatestEthPrice(), 6) * 1.1
+        const finalMintingFee = quantity * mintingFee * 1.1
+        const value = ethers.utils.parseEther((finalMintingFee / currentEthPrice).toString())
+
+        if (address && +formatEther(await provider.getBalance(address)) > (finalMintingFee / currentEthPrice)) {
+            const transaction = await contract.mintMany("0x01BE23585060835E02B77ef475b0Cc51aA1e0709", quantity, proof, { value })
+            return transaction
+        }
+
+
+    } else if (currency === Currency.USDC) {
+        const usdcContract = new ethers.Contract(
+            "0x1F8F51a93930D106C22Fc96c5DC0A6A518a78789",
+            USDTContractAbi,
+            signer
+        );
+
+        const nonce = await usdcContract.nonces(address)
+        const hexNonce = ethers.utils.hexZeroPad(nonce, 32)
+        const value = {
+            from: address,
+            to: NFTContract,  // testing contract address on rinkeby or prod address on mainnet
+            value: mintingFee * quantity, // minting fee * amount
+            validAfter: 0,  // 0
+            validBefore: ethers.constants.MaxUint256, // approximate end of sale is specified in the contract. For Testing:  2**256 - 1
+            nonce: hexNonce // has to be unique for the user
+        }
+
+        const sig = await signer._signTypedData(DOMAIN, types, value)
+        const splittedSig = splitSignature(sig)
+
+        const transaction = await contract.mintWithUSDCPermit(1, proof, hexNonce, splittedSig.v, splittedSig.r, splittedSig.s)
+        return transaction
+    }
+
 }
 
 
