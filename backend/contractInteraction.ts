@@ -19,6 +19,10 @@ const NFTContractAbi = new Interface(mintAbi)
 const USDTContract = "0xFe2cB7E38262FAa2Aaf1a9B5eD6b3DAFd0A98Af6"
 const USDTContractAbi = new Interface(usdtAbi)
 
+// we let the user pay a little more eth, so the amount is sufficient, 
+// even if the oracle price drops, while the tx is processed. The overpaid amount is refunded.
+const ETH_PAYMENT_MULTIPLIER: number = 1.02;
+
 // console.log(NFTContractAbi)
 
 const DOMAIN = {
@@ -71,14 +75,14 @@ export const mintSingle = async (provider: providers.Web3Provider | undefined, a
     );
 
     const proof = getProof(address, whitelist)
-
+    
     if (currency === Currency.USDT) {
         const transaction = await contract.mintSingle("0xFe2cB7E38262FAa2Aaf1a9B5eD6b3DAFd0A98Af6", proof)
         return transaction
 
     } else if (currency === Currency.ETH) {
 
-        const currentEthPrice = +formatUnits(await contract.getLatestEthPrice(), 6) * 1.1
+        const currentEthPrice = +formatUnits(await contract.getLatestEthPrice(), 6) * ETH_PAYMENT_MULTIPLIER
         const finalMintingFee = mintingFee * 1.1
         const value = ethers.utils.parseEther((finalMintingFee / currentEthPrice).toString())
 
@@ -96,12 +100,11 @@ export const mintSingle = async (provider: providers.Web3Provider | undefined, a
             signer
         );
 
-        const nonce = await usdcContract.nonces(address)
-        const hexNonce = ethers.utils.hexZeroPad(nonce, 32)
+        const hexNonce = ethers.utils.keccak256('0xfff'+Date.now())
         const value = {
             from: address,
             to: NFTContract,  // testing contract address on rinkeby or prod address on mainnet
-            value: mintingFee, // minting fee * amount
+            value: +parseUnits(''+mintingFee, 6), // minting fee * amount
             validAfter: 0,  // 0
             validBefore: ethers.constants.MaxUint256, // approximate end of sale is specified in the contract. For Testing:  2**256 - 1
             nonce: hexNonce // has to be unique for the user
@@ -139,8 +142,8 @@ export const mintMany = async (provider: providers.Web3Provider | undefined, add
 
     } else if (currency === Currency.ETH) {
 
-        const currentEthPrice = +formatUnits(await contract.getLatestEthPrice(), 6) * 1.1
-        const finalMintingFee = quantity * mintingFee * 1.1
+        const currentEthPrice = +formatUnits(await contract.getLatestEthPrice(), 6)
+        const finalMintingFee = quantity * mintingFee * ETH_PAYMENT_MULTIPLIER 
         const value = ethers.utils.parseEther((finalMintingFee / currentEthPrice).toString())
 
         if (address && +formatEther(await provider.getBalance(address)) > (finalMintingFee / currentEthPrice)) {
@@ -156,12 +159,11 @@ export const mintMany = async (provider: providers.Web3Provider | undefined, add
             signer
         );
 
-        const nonce = await usdcContract.nonces(address)
-        const hexNonce = ethers.utils.hexZeroPad(nonce, 32)
+        const hexNonce = ethers.utils.keccak256('0xfff'+Date.now())
         const value = {
             from: address,
             to: NFTContract,  // testing contract address on rinkeby or prod address on mainnet
-            value: mintingFee * quantity, // minting fee * amount
+            value: +parseUnits(''+(mintingFee * quantity), 6), // minting fee * amount
             validAfter: 0,  // 0
             validBefore: ethers.constants.MaxUint256, // approximate end of sale is specified in the contract. For Testing:  2**256 - 1
             nonce: hexNonce // has to be unique for the user
@@ -170,7 +172,7 @@ export const mintMany = async (provider: providers.Web3Provider | undefined, add
         const sig = await signer._signTypedData(DOMAIN, types, value)
         const splittedSig = splitSignature(sig)
 
-        const transaction = await contract.mintWithUSDCPermit(1, proof, hexNonce, splittedSig.v, splittedSig.r, splittedSig.s)
+        const transaction = await contract.mintWithUSDCPermit(quantity, proof, hexNonce, splittedSig.v, splittedSig.r, splittedSig.s)
         return transaction
     }
 
