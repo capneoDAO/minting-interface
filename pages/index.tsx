@@ -5,7 +5,7 @@ import Image from "next/image"
 import { BigNumber, ethers } from 'ethers';
 import { AiFillPlusCircle } from "react-icons/ai"
 import { AiFillMinusCircle } from "react-icons/ai"
-import { FaLinkedin, FaTelegramPlane, FaEthereum, FaInstagram, FaTwitter, FaMedium, FaYoutube } from "react-icons/fa";
+import { FaLinkedin, FaTelegramPlane, FaEthereum, FaInstagram, FaTwitter, FaMedium, FaYoutube, FaDiscord } from "react-icons/fa";
 
 import useConnectWeb3 from '../backend/connectWeb3';
 import { approveUSDT, getUSDTAllowance, mintMany, mintSingle } from '../backend/contractInteraction';
@@ -18,14 +18,32 @@ import WalletModal from "../components/WalletModal";
 import WalletButton from '../components/WalletButton';
 import TransactionModal from "../components/TransactionModal"
 import useContractInfo from '../backend/useContractInfo';
+import { isAddressWhitelisted } from '../backend/whitelist';
+import Toolbar from '../components/Footer';
+import Footer from '../components/Footer';
 
 // #00E091
 // #172721
 
+const nextMint = new Date(2022, 6, 1)
+let delta = (nextMint.getTime() - Date.now()) / 1000
+// calculate (and subtract) whole days
+var days = Math.floor(delta / 86400);
+delta -= days * 86400;
+
+// calculate (and subtract) whole hours
+var hours = Math.floor(delta / 3600) % 24;
+delta -= hours * 3600;
+
+// calculate (and subtract) whole minutes
+var minutes = Math.floor(delta / 60) % 60;
+delta -= minutes * 60;
+
+
 const Home: NextPage = () => {
     const { chainId, address } = useAppSelector(state => state.account)
     const { web3Provider, disconnectWallet } = useConnectWeb3();
-    const { activePhase, maxSupply, mintingFee, totalSupply } = useContractInfo(web3Provider, address, chainId)
+    const { activePhase, maxSupply, mintingFee, currentEthPrice, totalSupply, balances } = useContractInfo(web3Provider, address, chainId)
 
     const [paymentMethod, setPaymentMethod] = useState(Currency.ETH)
     const [quantity, setQuantity] = useState(1)
@@ -35,9 +53,10 @@ const Home: NextPage = () => {
     const [loading, setLoading] = useState(false)
     const [success, setSuccess] = useState(true)
     const [hash, setHash] = useState("")
-    const [NFTs, setNFTs] = useState({})
     const [number, setNumber] = useState(0)
     const [USDTAllowance, setUSDTAllowance] = useState(0)
+    const [whitelisted, setWhitelisted] = useState<boolean>(false)
+
 
     const increaseNumber = () => {
         if (number < 20) {
@@ -46,6 +65,15 @@ const Home: NextPage = () => {
             setNumber(0)
         }
     }
+
+    useEffect(() => {
+        if (activePhase === 1 || activePhase === 2) {
+            const whitelisted = isAddressWhitelisted(address, activePhase)
+            setWhitelisted(whitelisted)
+        } else if (activePhase === 3) {
+            setWhitelisted(true)
+        }
+    }, [address, activePhase])
 
     useEffect(() => {
         setTimeout(increaseNumber, 3000)
@@ -59,9 +87,27 @@ const Home: NextPage = () => {
         }
     }
 
+    const checkPrice = (price: number | undefined) => {
+        if (!price || !balances) return
+
+        if (paymentMethod === Currency.ETH && price > balances.ethBalance) {
+            return false
+        } else if (paymentMethod === Currency.USDC && price > balances.usdcBalance) {
+            return false
+        } else if (paymentMethod === Currency.USDT && price > balances.usdtBalance) {
+            return false
+        } else {
+            return true
+        }
+    }
+
     const calcPrice = () => {
+        let finalPrice;
         if (mintingFee) {
-            const finalPrice = (+mintingFee) * quantity
+            finalPrice = (+mintingFee) * quantity
+            if (paymentMethod === Currency.ETH) {
+                finalPrice = Math.round(finalPrice / currentEthPrice * 1000) / 1000
+            }
             return finalPrice
         }
     }
@@ -101,10 +147,10 @@ const Home: NextPage = () => {
     const mint = async () => {
         if (totalSupply < maxSupply && address) {
             if (quantity === 1) {
-                const transaction = await mintSingle(web3Provider, address, mintingFee, paymentMethod)
+                const transaction = await mintSingle(web3Provider, address, mintingFee, paymentMethod, activePhase)
                 await processTransaction(transaction)
             } else {
-                const transaction = await mintMany(web3Provider, address, mintingFee, paymentMethod, quantity)
+                const transaction = await mintMany(web3Provider, address, mintingFee, paymentMethod, quantity, activePhase)
                 await processTransaction(transaction)
             }
         }
@@ -134,17 +180,42 @@ const Home: NextPage = () => {
                 <TransactionModal onDismiss={() => { setTransactionModal(false); !transactionLoading && window.location.reload() }} loading={transactionLoading} success={success} hash={hash} chainId={chainId} />
             )}
 
-            <main className="flex flex-col w-screen pb-72">
+            <main className="flex flex-col w-screen">
+                <div className="relative flex flex-row items-center justify-start flex-wrap space-x-2 sm:space-x-5 pt-5 pl-5 lg:pl-5 lg:pt-10">
+                    <hr className='absolute left-0 -bottom-5 w-full border border-[#00E091]' />
+
+                    <a href="https://metagamehub.medium.com" className="cursor-pointer" target="_blank" >
+                        <FaMedium className="social-media-icon" />
+                    </a>
+
+                    <a href="https://www.linkedin.com/company/metagamehub-dao/" className="cursor-pointer" target="_blank" >
+                        <FaLinkedin className="social-media-icon" />
+                    </a>
+
+                    <a href="https://twitter.com/MGH_DAO" className="cursor-pointer" target="_blank" >
+                        <FaTwitter className="social-media-icon" />
+                    </a>
+
+                    <a href="https://discord.gg/8WJVMDXZwH" className="cursor-pointer" target="_blank" >
+                        <FaDiscord className="social-media-icon" />
+                    </a>
+
+                </div>
                 <div className="w-full flex justify-between items-center p-5 lg:p-10" >
                     <a href="https://www.metagamehub.io" target="_blank" className="transform hover:scale-110 transition-all duration-500 ease-in-out">
                         <img src="/images/capneo-logo.png" className={`h-12 lg:h-18`} />
                     </a>
-                    <WalletButton onClick={() => setOpenModal(true)} disconnectWallet={disconnectWallet} />
+                    <div className='flex items-center space-x-10'>
+                        <a className='text-white text-xl font-medium hover:text-[#00E091]'>Documentation</a>
+                        <a className='text-white text-xl font-medium hover:text-[#00E091]'>How & Why</a>
+                        <WalletButton onClick={() => setOpenModal(true)} disconnectWallet={disconnectWallet} />
+
+                    </div>
                 </div>
 
 
                 <div className="flex flex-col items-center w-full">
-                    <h2 className="text-white text-center mt-10 p-5">Public mint</h2>
+                    <h2 className="text-white text-center mt-10 p-5">{activePhase === 3 ? "Public mint" : activePhase === 2 ? "Phase 2 mint" : activePhase === 1 ? "Phase 1 mint" : ""}</h2>
 
                     <div className="flex flex-col max-w-lg lg:max-w-full lg:flex-row select-none rounded-xl p-5 xl:p-8 mx-5 sm:mx-20 lg:mx-0 items-stretch justify-evenly space-y-10 lg:space-y-0 space-x-0 lg:space-x-10 mt-20">
 
@@ -175,12 +246,7 @@ const Home: NextPage = () => {
                                 </div>
                             </div>
 
-                            <div className="flex items-center justify-between space-x-5 sm:space-x-10 mb-5 px-3">
-                                <p className="text-white font-medium text-2xl">Price: </p>
-                                <p className='text-white font-medium text-2xl'>${calcPrice()}</p>
-                            </div>
-
-                            <div className="flex items-center justify-between space-x-5 sm:space-x-10 mb-5 px-3">
+                            <div className="flex items-center justify-between space-x-5 sm:space-x-10 mb-10 px-3">
                                 <p className="text-white font-medium text-2xl">Payment: </p>
                                 <div className='flex space-x-5'>
                                     <img src="/images/ETH.webp" onClick={() => setPaymentMethod(Currency.ETH)} className={`h-12 ${paymentMethod === Currency.ETH ? "opacity-100" : "opacity-20"}`} />
@@ -189,43 +255,66 @@ const Home: NextPage = () => {
                                 </div>
                             </div>
 
+                            {mintingFee && (<div className="flex items-center justify-between space-x-5 sm:space-x-10 mb-5 px-3">
+                                <p className="text-white font-medium text-2xl">Price: </p>
+                                <p className='text-white font-medium text-2xl'>{calcPrice()} {paymentMethod === Currency.USDC ? "USDC" : paymentMethod === Currency.USDT ? "USDT" : "ETH"}</p>
+                            </div>)}
+
+                            {balances && (<div className="flex items-center justify-between space-x-5 sm:space-x-10 mb-5 px-3">
+                                <p className="text-white font-medium text-2xl">Balance: </p>
+                                <p className='text-white font-medium text-2xl'>{paymentMethod === Currency.USDC ? `${balances.usdcBalance} USDC` : paymentMethod === Currency.USDT ? `${balances.usdtBalance} USDT` : `${balances.ethBalance} ETH`}</p>
+                            </div>)}
+
 
 
                             {!web3Provider && (
-                                <button onClick={() => setOpenModal(true)} className="self-center mt-10 border hover:border-[#00E091] hover:text-[#00E091] w-34 xs:w-36 sm:w-44 md:w-52 flex items-center justify-center cursor-pointer text-gray-200 font-medium text-base sm:text-lg md:text-xl rounded-xl p-1.5 sm:p-2 md:p-3 transition ease-in-out duration-300">
+                                <button onClick={() => setOpenModal(true)} className="self-center mt-10 border hover:border-[#00E091] hover:text-[#00E091] w-34 xs:w-36 sm:w-44 md:w-52 flex items-center justify-center cursor-pointer text-white font-medium text-base sm:text-lg md:text-xl rounded-xl p-1.5 sm:p-2 md:p-3 transition ease-in-out duration-300">
                                     <span className="pt-1 z-10 font-medium text-lg sm:text-xl">Connect Wallet</span>
                                 </button>
                             )}
-                            {web3Provider && chainId === Chains.ETHEREUM_RINKEBY.chainId && (<>
-                                <button disabled={loading} onClick={mint} className="self-center mt-10 border hover:border-[#00E091] hover:text-[#00E091] w-34 xs:w-36 sm:w-44 md:w-52 flex items-center justify-center cursor-pointer text-gray-200 font-medium text-base sm:text-lg md:text-xl rounded-xl p-1.5 sm:p-2 md:p-3 transition ease-in-out duration-300">
-                                    <span className="pt-1 z-10 font-medium text-lg sm:text-xl">Mint NFTs</span>
-                                </button>
-                            </>
-                            )}
+
                             {web3Provider && chainId !== Chains.ETHEREUM_RINKEBY.chainId && (
-                                <button disabled={loading} onClick={() => { changeChain(web3Provider.provider, Chains.ETHEREUM_RINKEBY.chainId) }} className="self-center mt-10 border hover:border-[#00E091] hover:text-[#00E091] w-34 xs:w-36 sm:w-44 md:w-64 flex items-center justify-center cursor-pointer text-gray-200 font-medium text-base sm:text-lg md:text-xl rounded-xl p-1.5 sm:p-2 md:p-3 transition ease-in-out duration-300">
+                                <button disabled={loading} onClick={() => { changeChain(web3Provider.provider, Chains.ETHEREUM_RINKEBY.chainId) }} className="self-center mt-10 border hover:border-[#00E091] hover:text-[#00E091] w-34 xs:w-36 sm:w-44 md:w-64 flex items-center justify-center cursor-pointer text-white font-medium text-base sm:text-lg md:text-xl rounded-xl p-1.5 sm:p-2 md:p-3 transition ease-in-out duration-300">
                                     <span className="pt-1 z-10 font-medium text-lg sm:text-xl">Switch to Rinkeby</span>
                                 </button>
                             )}
 
+                            {web3Provider && chainId === Chains.ETHEREUM_RINKEBY.chainId && !(paymentMethod === Currency.USDT && !+USDTAllowance) && (<>
+                                <button disabled={loading || activePhase === 0 || !whitelisted || !checkPrice(calcPrice())} onClick={mint} className="self-center mt-10 disabled:opacity-60 disabled:border-white disabled:text-white border hover:border-[#00E091] hover:text-[#00E091] w-34 xs:w-36 sm:w-44 md:w-52 flex items-center justify-center cursor-pointer text-white font-medium text-base sm:text-lg md:text-xl rounded-xl p-1.5 sm:p-2 md:p-3 transition ease-in-out duration-300">
+                                    <span className="pt-1 z-10 font-medium text-lg sm:text-xl">Mint NFTs</span>
+                                </button>
+                            </>
+                            )}
+
                             {web3Provider && paymentMethod === Currency.USDT && !+USDTAllowance && chainId === Chains.ETHEREUM_RINKEBY.chainId && (
-                                <button disabled={loading} onClick={approve} className="self-center mt-10 border hover:border-[#00E091] hover:text-[#00E091] w-34 xs:w-36 sm:w-44 md:w-64 flex items-center justify-center cursor-pointer text-gray-200 font-medium text-base sm:text-lg md:text-xl rounded-xl p-1.5 sm:p-2 md:p-3 transition ease-in-out duration-300">
+                                <button disabled={loading || activePhase === 0 || !whitelisted || !checkPrice(calcPrice())} onClick={approve} className="self-center mt-10 disabled:opacity-60 disabled:border-white disabled:text-white border hover:border-[#00E091] hover:text-[#00E091] w-34 xs:w-36 sm:w-44 md:w-64 flex items-center justify-center cursor-pointer text-white font-medium text-base sm:text-lg md:text-xl rounded-xl p-1.5 sm:p-2 md:p-3 transition ease-in-out duration-300">
                                     <span className="pt-1 z-10 font-medium text-lg sm:text-xl">Approve USDT</span>
                                 </button>
+                            )}
+
+                            {whitelisted && activePhase !== 0 && !checkPrice(calcPrice()) && (
+                                <p className='text-red-500 self-center mt-5'>You don't have enough tokens.</p>
+                            )}
+
+                            {!whitelisted && activePhase !== 0 && (
+                                <p className='text-white self-center mt-5'>You are not whitelisted. <a href='https://www.metagamehub.io' target="_blank" className='underline'>Get whitelisted now.</a></p>
+                            )}
+
+                            {activePhase === 0 && (
+                                <p className='text-white self-center font-medium mt-5'>Next mint starts in: {days > 0 ? `${days} days` : hours > 0 ? `${hours} hours` : `${minutes} minutes`}</p>
                             )}
                         </div>
                     </div>
 
                 </div>
 
-
-
-
                 {loading && (
                     <div className="w-full h-full self-center flex items-center justify-center mt-10">
                         <img src="/images/capneo-logo.png" className={` h-24 w-24 animate-rotate`} />
                     </div>
                 )}
+
+                <Footer />
 
                 {/* {showNFTs && address && (
                     Object.entries(NFTs).length === 0 ? (

@@ -7,6 +7,7 @@ import { getProof, splitSig } from "../lib/utilities";
 
 import mintAbi from "./abi/mintAbi.json"
 import usdtAbi from "./abi/usdtAbi.json"
+import { getProofForAddress } from "./whitelist";
 // import whitelist from "./whitelist.json"
 const whitelist = [
     "0xFca6b83AfBBB0d66A13a06Ec31fA8e27E5188ca8",
@@ -61,7 +62,7 @@ const types = {
 }
 
 
-export const mintSingle = async (provider: providers.Web3Provider | undefined, address: string, mintingFee: number, currency: Currency) => {
+export const mintSingle = async (provider: providers.Web3Provider | undefined, address: string, mintingFee: number, currency: Currency, activePhase: number) => {
     if (!provider) {
         return
     }
@@ -74,16 +75,16 @@ export const mintSingle = async (provider: providers.Web3Provider | undefined, a
         signer
     );
 
-    const proof = getProof(address, whitelist)
-    
+    const proof = activePhase === 3 ? [] : getProofForAddress(address, activePhase)
+
     if (currency === Currency.USDT) {
         const transaction = await contract.mintSingle("0xFe2cB7E38262FAa2Aaf1a9B5eD6b3DAFd0A98Af6", proof)
         return transaction
 
     } else if (currency === Currency.ETH) {
 
-        const currentEthPrice = +formatUnits(await contract.getLatestEthPrice(), 6) * ETH_PAYMENT_MULTIPLIER
-        const finalMintingFee = mintingFee * 1.1
+        const currentEthPrice = +formatUnits(await contract.getLatestEthPrice(), 6)
+        const finalMintingFee = mintingFee * ETH_PAYMENT_MULTIPLIER
         const value = ethers.utils.parseEther((finalMintingFee / currentEthPrice).toString())
 
         if (address && +formatEther(await provider.getBalance(address)) > (finalMintingFee / currentEthPrice)) {
@@ -100,11 +101,11 @@ export const mintSingle = async (provider: providers.Web3Provider | undefined, a
             signer
         );
 
-        const hexNonce = ethers.utils.keccak256('0xfff'+Date.now())
+        const hexNonce = ethers.utils.keccak256('0xfff' + Date.now())
         const value = {
             from: address,
             to: NFTContract,  // testing contract address on rinkeby or prod address on mainnet
-            value: +parseUnits(''+mintingFee, 6), // minting fee * amount
+            value: +parseUnits('' + mintingFee, 6), // minting fee * amount
             validAfter: 0,  // 0
             validBefore: ethers.constants.MaxUint256, // approximate end of sale is specified in the contract. For Testing:  2**256 - 1
             nonce: hexNonce // has to be unique for the user
@@ -120,7 +121,7 @@ export const mintSingle = async (provider: providers.Web3Provider | undefined, a
 }
 
 
-export const mintMany = async (provider: providers.Web3Provider | undefined, address: string, mintingFee: number, currency: Currency, quantity: number) => {
+export const mintMany = async (provider: providers.Web3Provider | undefined, address: string, mintingFee: number, currency: Currency, quantity: number, activePhase: number) => {
     if (!provider) {
         return
     }
@@ -133,7 +134,7 @@ export const mintMany = async (provider: providers.Web3Provider | undefined, add
         signer
     );
 
-    const proof = getProof(address, whitelist)
+    const proof = activePhase === 3 ? [] : getProofForAddress(address, activePhase)
 
     if (currency === Currency.USDT) {
 
@@ -143,7 +144,7 @@ export const mintMany = async (provider: providers.Web3Provider | undefined, add
     } else if (currency === Currency.ETH) {
 
         const currentEthPrice = +formatUnits(await contract.getLatestEthPrice(), 6)
-        const finalMintingFee = quantity * mintingFee * ETH_PAYMENT_MULTIPLIER 
+        const finalMintingFee = quantity * mintingFee * ETH_PAYMENT_MULTIPLIER
         const value = ethers.utils.parseEther((finalMintingFee / currentEthPrice).toString())
 
         if (address && +formatEther(await provider.getBalance(address)) > (finalMintingFee / currentEthPrice)) {
@@ -159,11 +160,11 @@ export const mintMany = async (provider: providers.Web3Provider | undefined, add
             signer
         );
 
-        const hexNonce = ethers.utils.keccak256('0xfff'+Date.now())
+        const hexNonce = ethers.utils.keccak256('0xfff' + Date.now())
         const value = {
             from: address,
             to: NFTContract,  // testing contract address on rinkeby or prod address on mainnet
-            value: +parseUnits(''+(mintingFee * quantity), 6), // minting fee * amount
+            value: +parseUnits('' + (mintingFee * quantity), 6), // minting fee * amount
             validAfter: 0,  // 0
             validBefore: ethers.constants.MaxUint256, // approximate end of sale is specified in the contract. For Testing:  2**256 - 1
             nonce: hexNonce // has to be unique for the user
@@ -196,9 +197,10 @@ export const getContractInfo = async (provider: providers.Web3Provider | undefin
 
     const activePhase = await contract.getActivePhase()
     const totalSupply = await contract.totalSupply()
+    const currentEthPrice = await contract.getLatestEthPrice()
     const phaseConfig = await contract.getPhaseConfig(activePhase)
 
-    return { activePhase, totalSupply, phaseConfig }
+    return { activePhase, totalSupply, currentEthPrice, phaseConfig }
 }
 
 
@@ -233,4 +235,33 @@ export const approveUSDT = async (provider: providers.Web3Provider | undefined, 
 
     const result = await contract.approve(NFTContract, ethers.constants.MaxUint256)
     return result
+}
+
+export const getBalances = async (provider: providers.Web3Provider | undefined, chainId: number | undefined, address: string) => {
+
+    let contractProvider;
+    if (!provider || chainId !== Chains.ETHEREUM_RINKEBY.chainId) {
+        contractProvider = new ethers.providers.InfuraProvider(Chains.ETHEREUM_RINKEBY.chainId, "03bfd7b76f3749c8bb9f2c91bdba37f3")
+    } else {
+        contractProvider = provider
+    }
+
+    const usdcContract = new ethers.Contract(
+        "0x1F8F51a93930D106C22Fc96c5DC0A6A518a78789",
+        USDTContractAbi,
+        contractProvider
+    );
+
+    const usdtContract = new ethers.Contract(
+        "0xFe2cB7E38262FAa2Aaf1a9B5eD6b3DAFd0A98Af6",
+        USDTContractAbi,
+        contractProvider
+    );
+
+    const usdcBalance = +(await usdcContract.balanceOf(address)) / 1000000
+    const usdtBalance = +(await usdtContract.balanceOf(address)) / 1000000
+    const ethBalance = Math.round(+formatEther(await contractProvider.getBalance(address)) * 1000) / 1000
+    console.log(usdcBalance, usdtBalance, ethBalance)
+
+    return { usdcBalance, usdtBalance, ethBalance }
 }
