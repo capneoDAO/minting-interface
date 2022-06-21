@@ -42,14 +42,8 @@ export function getLeaf(account: string) {
   );
 }
 
-export function getProof(account: string, WhitelistArray: any[]) {
-  let proof = [];
+export function getProof(account: string, WhitelistArray: any[]): string[] {
   const leaves = WhitelistArray.map(address => getLeaf(address));
   const tree = new MerkleTree(leaves, keccak256, { sort: true });
-  for (let i = 0; i < tree.getProof(getLeaf(account)).length; i++) {
-    proof.push(
-      '0x' + tree.getProof(getLeaf(account))[i]["data"].toString('hex')
-    )
-  }
-  return proof;
+  return tree.getHexProof(getLeaf(account));
 }
