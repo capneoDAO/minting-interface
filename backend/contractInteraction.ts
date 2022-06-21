@@ -3,18 +3,12 @@ import { ethers, providers } from "ethers";
 import { formatEther, formatUnits, parseUnits, splitSignature } from "ethers/lib/utils";
 import { Chains } from "../lib/chains";
 import { Currency } from "../lib/enums";
-import { getProof, splitSig } from "../lib/utilities";
 
 import mintAbi from "./abi/mintAbi.json"
 import usdtAbi from "./abi/usdtAbi.json"
 import { getProofForAddress } from "./whitelist";
-// import whitelist from "./whitelist.json"
-const whitelist = [
-    "0xFca6b83AfBBB0d66A13a06Ec31fA8e27E5188ca8",
-    "0x382511Ab458A8e55be45F81BDb78c0b25E2148F2"
-]
 
-const NFTContract = "0xe9c832BD6c97b38E066092861E3A26793507Db38"
+const NFTContract = "0x90bf94f2b24021eeA74De30fF9a6849CCB450a3f"
 const NFTContractAbi = new Interface(mintAbi)
 
 const USDTContract = "0xFe2cB7E38262FAa2Aaf1a9B5eD6b3DAFd0A98Af6"
@@ -88,8 +82,7 @@ export const mintSingle = async (provider: providers.Web3Provider | undefined, a
         const value = ethers.utils.parseEther((finalMintingFee / currentEthPrice).toString())
 
         if (address && +formatEther(await provider.getBalance(address)) > (finalMintingFee / currentEthPrice)) {
-            const proof = getProof(address, whitelist)
-            const transaction = await contract.mintSingle("0x01BE23585060835E02B77ef475b0Cc51aA1e0709", proof, { value })
+            const transaction = await contract.mintSingle("0x0000000000000000000000000000000000000000", proof, { value })
             return transaction
         }
 
@@ -148,7 +141,7 @@ export const mintMany = async (provider: providers.Web3Provider | undefined, add
         const value = ethers.utils.parseEther((finalMintingFee / currentEthPrice).toString())
 
         if (address && +formatEther(await provider.getBalance(address)) > (finalMintingFee / currentEthPrice)) {
-            const transaction = await contract.mintMany("0x01BE23585060835E02B77ef475b0Cc51aA1e0709", quantity, proof, { value })
+            const transaction = await contract.mintMany("0x0000000000000000000000000000000000000000", quantity, proof, { value })
             return transaction
         }
 
