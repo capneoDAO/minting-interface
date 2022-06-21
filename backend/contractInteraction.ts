@@ -243,7 +243,6 @@ export const getBalances = async (provider: providers.Web3Provider | undefined, 
     const usdcBalance = +(await usdcContract.balanceOf(address)) / 1000000
     const usdtBalance = +(await usdtContract.balanceOf(address)) / 1000000
     const ethBalance = Math.round(+formatEther(await contractProvider.getBalance(address)) * 1000) / 1000
-    console.log(usdcBalance, usdtBalance, ethBalance)
 
     return { usdcBalance, usdtBalance, ethBalance }
 }

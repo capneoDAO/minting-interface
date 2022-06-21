@@ -214,99 +214,101 @@ const Home: NextPage = () => {
                 </div>
 
 
-                <div className="flex flex-col items-center w-full">
-                    <h2 className="text-white text-center mt-10 p-5">{activePhase === 3 ? "Public mint" : activePhase === 2 ? "Phase 2 mint" : activePhase === 1 ? "Phase 1 mint" : ""}</h2>
-
-                    <div className="flex flex-col max-w-lg lg:max-w-full lg:flex-row select-none rounded-xl p-5 xl:p-8 mx-5 sm:mx-20 lg:mx-0 items-stretch justify-evenly space-y-10 lg:space-y-0 space-x-0 lg:space-x-10 mt-20">
-
-                        <img src={getImageLink()} className="rounded h-auto w-72" />
-
-                        <div className="flex flex-col justify-center p-1 w-[100vw] max-w-xl">
-
-                            <div className='flex w-full bg-white h-3 rounded mb-5'>
-                                <div className={`bg-[#00E091] rounded w-[1%] ${totalSupply / maxSupply > 0.05 && "w-[5%]"} ${totalSupply / maxSupply > 0.1 && "w-[10%]"} ${totalSupply / maxSupply > 0.15 && "w-[15%]"} ${totalSupply / maxSupply > 0.2 && "w-[20%]"} ${totalSupply / maxSupply > 0.25 && "w-[25%]"} ${totalSupply / maxSupply > 0.3 && "w-[30%]"} ${totalSupply / maxSupply > 0.35 && "w-[35%]"} ${totalSupply / maxSupply > 0.4 && "w-[40%]"} ${totalSupply / maxSupply > 0.45 && "w-[45%]"} ${totalSupply / maxSupply > 0.5 && "w-[50%]"} ${totalSupply / maxSupply > 0.55 && "w-[55%]"} ${totalSupply / maxSupply > 0.6 && "w-[60%]"} ${totalSupply / maxSupply > 0.65 && "w-[65%]"} ${totalSupply / maxSupply > 0.7 && "w-[70%]"} ${totalSupply / maxSupply > 0.75 && "w-[75%]"} ${totalSupply / maxSupply > 0.8 && "w-[80%]"} ${totalSupply / maxSupply > 0.85 && "w-[85%]"} ${totalSupply / maxSupply > 0.9 && "w-[90%]"} ${totalSupply / maxSupply > 0.95 && "w-[95%]"} ${totalSupply / maxSupply === 1 && "w-[100%]"}`} />
-                            </div>
-
-                            <div className='flex justify-between text-white font-medium text-lg'>
-                                <p>Total available:</p>
-                                <p>{maxSupply}</p>
-                            </div>
-
-                            <div className='flex justify-between text-[#00E091] font-medium text-lg'>
-                                <p>Already mined:</p>
-                                <p>{totalSupply}</p>
-                            </div>
-
-                            <div className="flex items-center mt-10 justify-between space-x-5 sm:space-x-10 mb-5 px-3">
-                                <p className="text-white font-medium text-2xl">Quantity: </p>
-                                <div className="flex items-center space-x-0 sm:space-x-1 justify-center">
-                                    <AiFillMinusCircle onClick={decrease} className="text-3xl sm:text-4xl text-gray-700 hover:text-gray-600 transition-all ease-in-out duration-300 cursor-pointer" />
-                                    <p className="text-[#00E091] text-4xl sm:text-5xl font-medium w-18 text-center pt-2">{quantity}</p>
-                                    <AiFillPlusCircle onClick={increase} className="text-3xl sm:text-4xl text-gray-700 hover:text-gray-600 transition-all ease-in-out duration-300 cursor-pointer" />
-                                </div>
-                            </div>
-
-                            <div className="flex items-center justify-between space-x-5 sm:space-x-10 mb-10 px-3">
-                                <p className="text-white font-medium text-2xl">Payment: </p>
-                                <div className='flex space-x-5'>
-                                    <img src="/images/ETH.webp" onClick={() => setPaymentMethod(Currency.ETH)} className={`h-12 ${paymentMethod === Currency.ETH ? "opacity-100" : "opacity-20"}`} />
-                                    <img src="/images/USDC.webp" onClick={() => setPaymentMethod(Currency.USDC)} className={`h-12 ${paymentMethod === Currency.USDC ? "opacity-100" : "opacity-20"}`} />
-                                    <img src="/images/USDT.webp" onClick={() => { setPaymentMethod(Currency.USDT); getAllowance() }} className={`h-12 ${paymentMethod === Currency.USDT ? "opacity-100" : "opacity-20"}`} />
-                                </div>
-                            </div>
-
-                            {mintingFee && (<div className="flex items-center justify-between space-x-5 sm:space-x-10 mb-5 px-3">
-                                <p className="text-white font-medium text-2xl">Price: </p>
-                                <p className='text-white font-medium text-2xl'>{calcPrice()} {paymentMethod === Currency.USDC ? "USDC" : paymentMethod === Currency.USDT ? "USDT" : "ETH"}</p>
-                            </div>)}
-
-                            {balances && (<div className="flex items-center justify-between space-x-5 sm:space-x-10 mb-5 px-3">
-                                <p className="text-white font-medium text-2xl">Balance: </p>
-                                <p className='text-white font-medium text-2xl'>{paymentMethod === Currency.USDC ? `${balances.usdcBalance} USDC` : paymentMethod === Currency.USDT ? `${balances.usdtBalance} USDT` : `${balances.ethBalance} ETH`}</p>
-                            </div>)}
-
-
-
-                            {!web3Provider && (
-                                <button onClick={() => setOpenModal(true)} className="self-center mt-10 border hover:border-[#00E091] hover:text-[#00E091] w-34 xs:w-36 sm:w-44 md:w-52 flex items-center justify-center cursor-pointer text-white font-medium text-base sm:text-lg md:text-xl rounded-xl p-1.5 sm:p-2 md:p-3 transition ease-in-out duration-300">
-                                    <span className="pt-1 z-10 font-medium text-lg sm:text-xl">Connect Wallet</span>
-                                </button>
-                            )}
-
-                            {web3Provider && chainId !== Chains.ETHEREUM_RINKEBY.chainId && (
-                                <button disabled={loading} onClick={() => { changeChain(web3Provider.provider, Chains.ETHEREUM_RINKEBY.chainId) }} className="self-center mt-10 border hover:border-[#00E091] hover:text-[#00E091] w-34 xs:w-36 sm:w-44 md:w-64 flex items-center justify-center cursor-pointer text-white font-medium text-base sm:text-lg md:text-xl rounded-xl p-1.5 sm:p-2 md:p-3 transition ease-in-out duration-300">
-                                    <span className="pt-1 z-10 font-medium text-lg sm:text-xl">Switch to Rinkeby</span>
-                                </button>
-                            )}
-
-                            {web3Provider && chainId === Chains.ETHEREUM_RINKEBY.chainId && !(paymentMethod === Currency.USDT && !+USDTAllowance) && (<>
-                                <button disabled={loading || activePhase === 0 || !whitelisted || !checkPrice(calcPrice())} onClick={mint} className="self-center mt-10 disabled:opacity-60 disabled:border-white disabled:text-white border hover:border-[#00E091] hover:text-[#00E091] w-34 xs:w-36 sm:w-44 md:w-52 flex items-center justify-center cursor-pointer text-white font-medium text-base sm:text-lg md:text-xl rounded-xl p-1.5 sm:p-2 md:p-3 transition ease-in-out duration-300">
-                                    <span className="pt-1 z-10 font-medium text-lg sm:text-xl">Mint NFTs</span>
-                                </button>
-                            </>
-                            )}
-
-                            {web3Provider && paymentMethod === Currency.USDT && !+USDTAllowance && chainId === Chains.ETHEREUM_RINKEBY.chainId && (
-                                <button disabled={loading || activePhase === 0 || !whitelisted || !checkPrice(calcPrice())} onClick={approve} className="self-center mt-10 disabled:opacity-60 disabled:border-white disabled:text-white border hover:border-[#00E091] hover:text-[#00E091] w-34 xs:w-36 sm:w-44 md:w-64 flex items-center justify-center cursor-pointer text-white font-medium text-base sm:text-lg md:text-xl rounded-xl p-1.5 sm:p-2 md:p-3 transition ease-in-out duration-300">
-                                    <span className="pt-1 z-10 font-medium text-lg sm:text-xl">Approve USDT</span>
-                                </button>
-                            )}
-
-                            {whitelisted && activePhase !== 0 && !checkPrice(calcPrice()) && (
-                                <p className='text-red-500 self-center mt-5'>You don't have enough tokens.</p>
-                            )}
-
-                            {!whitelisted && activePhase !== 0 && (
-                                <p className='text-white self-center mt-5'>You are not whitelisted. <a href='https://www.metagamehub.io' target="_blank" className='underline'>Get whitelisted now.</a></p>
-                            )}
-
-                            {activePhase === 0 && (
-                                <p className='text-white self-center font-medium mt-5'>Next mint starts in: {days > 0 ? `${days} days` : hours > 0 ? `${hours} hours` : `${minutes} minutes`}</p>
-                            )}
-                        </div>
+                {activePhase === 0 ? (
+                    <div className='flex w-screen h-screen items-center justify-center'>
+                        <p className='text-white self-center font-medium text-6xl'>Next mint starts in: <span className='text-[#00E091]'>{days > 0 ? `${days} days` : hours > 0 ? `${hours} hours` : `${minutes} minutes`}</span></p>
                     </div>
+                ) : (
+                    <div className="flex flex-col items-center w-full">
+                        <h2 className="text-white text-center mt-10 p-5">{activePhase === 3 ? "Public mint" : activePhase === 2 ? "Phase 2 mint" : activePhase === 1 ? "Phase 1 mint" : ""}</h2>
 
-                </div>
+                        <div className="flex flex-col max-w-lg lg:max-w-full lg:flex-row select-none rounded-xl p-5 xl:p-8 mx-5 sm:mx-20 lg:mx-0 items-stretch justify-evenly space-y-10 lg:space-y-0 space-x-0 lg:space-x-10 mt-20">
+
+                            <img src={getImageLink()} className="rounded h-auto w-72" />
+
+                            <div className="flex flex-col justify-center p-1 w-[100vw] max-w-xl">
+
+                                <div className='flex w-full bg-white h-3 rounded mb-5'>
+                                    <div className={`bg-[#00E091] rounded w-[1%] ${totalSupply / maxSupply > 0.05 && "w-[5%]"} ${totalSupply / maxSupply > 0.1 && "w-[10%]"} ${totalSupply / maxSupply > 0.15 && "w-[15%]"} ${totalSupply / maxSupply > 0.2 && "w-[20%]"} ${totalSupply / maxSupply > 0.25 && "w-[25%]"} ${totalSupply / maxSupply > 0.3 && "w-[30%]"} ${totalSupply / maxSupply > 0.35 && "w-[35%]"} ${totalSupply / maxSupply > 0.4 && "w-[40%]"} ${totalSupply / maxSupply > 0.45 && "w-[45%]"} ${totalSupply / maxSupply > 0.5 && "w-[50%]"} ${totalSupply / maxSupply > 0.55 && "w-[55%]"} ${totalSupply / maxSupply > 0.6 && "w-[60%]"} ${totalSupply / maxSupply > 0.65 && "w-[65%]"} ${totalSupply / maxSupply > 0.7 && "w-[70%]"} ${totalSupply / maxSupply > 0.75 && "w-[75%]"} ${totalSupply / maxSupply > 0.8 && "w-[80%]"} ${totalSupply / maxSupply > 0.85 && "w-[85%]"} ${totalSupply / maxSupply > 0.9 && "w-[90%]"} ${totalSupply / maxSupply > 0.95 && "w-[95%]"} ${totalSupply / maxSupply === 1 && "w-[100%]"}`} />
+                                </div>
+
+                                <div className='flex justify-between text-white font-medium text-lg'>
+                                    <p>Total available:</p>
+                                    <p>{maxSupply}</p>
+                                </div>
+
+                                <div className='flex justify-between text-[#00E091] font-medium text-lg'>
+                                    <p>Already mined:</p>
+                                    <p>{totalSupply}</p>
+                                </div>
+
+                                <div className="flex items-center mt-10 justify-between space-x-5 sm:space-x-10 mb-5 px-3">
+                                    <p className="text-white font-medium text-2xl">Quantity: </p>
+                                    <div className="flex items-center space-x-0 sm:space-x-1 justify-center">
+                                        <AiFillMinusCircle onClick={decrease} className="text-3xl sm:text-4xl text-gray-700 hover:text-gray-600 transition-all ease-in-out duration-300 cursor-pointer" />
+                                        <p className="text-[#00E091] text-4xl sm:text-5xl font-medium w-18 text-center pt-2">{quantity}</p>
+                                        <AiFillPlusCircle onClick={increase} className="text-3xl sm:text-4xl text-gray-700 hover:text-gray-600 transition-all ease-in-out duration-300 cursor-pointer" />
+                                    </div>
+                                </div>
+
+                                <div className="flex items-center justify-between space-x-5 sm:space-x-10 mb-10 px-3">
+                                    <p className="text-white font-medium text-2xl">Payment: </p>
+                                    <div className='flex space-x-5'>
+                                        <img src="/images/ETH.webp" onClick={() => setPaymentMethod(Currency.ETH)} className={`h-12 ${paymentMethod === Currency.ETH ? "opacity-100" : "opacity-20"}`} />
+                                        <img src="/images/USDC.webp" onClick={() => setPaymentMethod(Currency.USDC)} className={`h-12 ${paymentMethod === Currency.USDC ? "opacity-100" : "opacity-20"}`} />
+                                        <img src="/images/USDT.webp" onClick={() => { setPaymentMethod(Currency.USDT); getAllowance() }} className={`h-12 ${paymentMethod === Currency.USDT ? "opacity-100" : "opacity-20"}`} />
+                                    </div>
+                                </div>
+
+                                {mintingFee && (<div className="flex items-center justify-between space-x-5 sm:space-x-10 mb-5 px-3">
+                                    <p className="text-white font-medium text-2xl">Price: </p>
+                                    <p className='text-white font-medium text-2xl'>{calcPrice()} {paymentMethod === Currency.USDC ? "USDC" : paymentMethod === Currency.USDT ? "USDT" : "ETH"}</p>
+                                </div>)}
+
+                                {balances && (<div className="flex items-center justify-between space-x-5 sm:space-x-10 mb-5 px-3">
+                                    <p className="text-white font-medium text-2xl">Balance: </p>
+                                    <p className='text-white font-medium text-2xl'>{paymentMethod === Currency.USDC ? `${balances.usdcBalance} USDC` : paymentMethod === Currency.USDT ? `${balances.usdtBalance} USDT` : `${balances.ethBalance} ETH`}</p>
+                                </div>)}
+
+
+
+                                {!web3Provider && (
+                                    <button onClick={() => setOpenModal(true)} className="self-center mt-10 border hover:border-[#00E091] hover:text-[#00E091] w-34 xs:w-36 sm:w-44 md:w-52 flex items-center justify-center cursor-pointer text-white font-medium text-base sm:text-lg md:text-xl rounded-xl p-1.5 sm:p-2 md:p-3 transition ease-in-out duration-300">
+                                        <span className="pt-1 z-10 font-medium text-lg sm:text-xl">Connect Wallet</span>
+                                    </button>
+                                )}
+
+                                {web3Provider && chainId !== Chains.ETHEREUM_RINKEBY.chainId && (
+                                    <button disabled={loading} onClick={() => { changeChain(web3Provider.provider, Chains.ETHEREUM_RINKEBY.chainId) }} className="self-center mt-10 border hover:border-[#00E091] hover:text-[#00E091] w-34 xs:w-36 sm:w-44 md:w-64 flex items-center justify-center cursor-pointer text-white font-medium text-base sm:text-lg md:text-xl rounded-xl p-1.5 sm:p-2 md:p-3 transition ease-in-out duration-300">
+                                        <span className="pt-1 z-10 font-medium text-lg sm:text-xl">Switch to Rinkeby</span>
+                                    </button>
+                                )}
+
+                                {web3Provider && chainId === Chains.ETHEREUM_RINKEBY.chainId && !(paymentMethod === Currency.USDT && !+USDTAllowance) && (<>
+                                    <button disabled={loading || !whitelisted || !checkPrice(calcPrice())} onClick={mint} className="self-center mt-10 disabled:opacity-60 disabled:border-white disabled:text-white border hover:border-[#00E091] hover:text-[#00E091] w-34 xs:w-36 sm:w-44 md:w-52 flex items-center justify-center cursor-pointer text-white font-medium text-base sm:text-lg md:text-xl rounded-xl p-1.5 sm:p-2 md:p-3 transition ease-in-out duration-300">
+                                        <span className="pt-1 z-10 font-medium text-lg sm:text-xl">Mint NFTs</span>
+                                    </button>
+                                </>
+                                )}
+
+                                {web3Provider && paymentMethod === Currency.USDT && !+USDTAllowance && chainId === Chains.ETHEREUM_RINKEBY.chainId && (
+                                    <button disabled={loading || !whitelisted || !checkPrice(calcPrice())} onClick={approve} className="self-center mt-10 disabled:opacity-60 disabled:border-white disabled:text-white border hover:border-[#00E091] hover:text-[#00E091] w-34 xs:w-36 sm:w-44 md:w-64 flex items-center justify-center cursor-pointer text-white font-medium text-base sm:text-lg md:text-xl rounded-xl p-1.5 sm:p-2 md:p-3 transition ease-in-out duration-300">
+                                        <span className="pt-1 z-10 font-medium text-lg sm:text-xl">Approve USDT</span>
+                                    </button>
+                                )}
+
+                                {whitelisted && !checkPrice(calcPrice()) && (
+                                    <p className='text-red-500 self-center mt-5'>You don't have enough tokens.</p>
+                                )}
+
+                                {!whitelisted && (
+                                    <p className='text-white self-center mt-5'>You are not whitelisted. <a href='https://www.metagamehub.io' target="_blank" className='underline'>Get whitelisted now.</a></p>
+                                )}
+                            </div>
+                        </div>
+
+                    </div>
+                )}
 
                 {loading && (
                     <div className="w-full h-full self-center flex items-center justify-center mt-10">
