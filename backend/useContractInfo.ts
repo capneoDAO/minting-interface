@@ -66,5 +66,5 @@ export default function useContractInfo(web3Provider: ethers.providers.Web3Provi
     }, [web3Provider, address, chainId])
 
 
-    return { activePhase, maxSupply, mintingFee, currentEthPrice, totalSupply, balances }
+    return { activePhase, maxSupply, mintingFee, currentEthPrice, totalSupply, balances, loading }
 }
