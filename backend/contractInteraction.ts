@@ -86,13 +86,7 @@ export const mintSingle = async (provider: providers.Web3Provider | undefined, a
             return transaction
         }
 
-
     } else if (currency === Currency.USDC) {
-        const usdcContract = new ethers.Contract(
-            "0x1F8F51a93930D106C22Fc96c5DC0A6A518a78789",
-            USDTContractAbi,
-            signer
-        );
 
         const hexNonce = ethers.utils.keccak256('0xfff' + Date.now())
         const value = {
@@ -147,11 +141,6 @@ export const mintMany = async (provider: providers.Web3Provider | undefined, add
 
 
     } else if (currency === Currency.USDC) {
-        const usdcContract = new ethers.Contract(
-            "0x1F8F51a93930D106C22Fc96c5DC0A6A518a78789",
-            USDTContractAbi,
-            signer
-        );
 
         const hexNonce = ethers.utils.keccak256('0xfff' + Date.now())
         const value = {
