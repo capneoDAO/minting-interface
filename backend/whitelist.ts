@@ -1,15 +1,15 @@
-import { whitelist } from "./whitelistArray";
+import { whitelists } from "./whitelistArray";
 import { getProof } from "../lib/utilities";
 import { isAddress, } from "ethers/lib/utils";
 
-export const isAddressWhitelisted = (address: any): Boolean => {
+export const isAddressWhitelisted = (address: any, activePhase: number): Boolean => {
     if(! isAddress(address)) return false;
 
-    return whitelist.includes(address.toLowerCase());
+    return whitelists[activePhase].includes(address.toLowerCase());
 }
 
-export const getProofForAddress = (address: any): Array<string> => {
+export const getProofForAddress = (address: any, activePhase: number): Array<string> => {
     if(! isAddress(address)) return [];
 
-    return getProof(address, whitelist);
+    return getProof(address, whitelists[activePhase]);
 }
